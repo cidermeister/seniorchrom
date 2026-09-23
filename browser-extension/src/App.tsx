@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import {  ShieldAlert, ShieldCheck, Settings, Loader2, Search, ExternalLink } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Settings, Loader2, Search, ExternalLink } from 'lucide-react';
 import { analyze, getSettings, saveSettings } from './ai/manager';
 import type { AISettings, AIResponse } from './ai/types';
 
@@ -12,17 +12,25 @@ function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load initial data
     getSettings().then(setSettingsState);
 
-    // Get current tab URL
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0] && tabs[0].url) {
         setCurrentUrl(tabs[0].url);
+
+        // We only want to show a warning if it explicitly matches the CURRENT URL of the tab.
+        // This prevents showing an old cached warning from a previous page navigation
+        // before the new URL's scan has finished.
+        const activeUrl = tabs[0].url;
+
         if (tabs[0].id) {
           chrome.runtime.sendMessage({ type: 'CHECK_TAB_WARNING', tabId: tabs[0].id }, (response) => {
              if (response && response.warning) {
-               setScanResult(response.warning);
+                 // Explicitly check that the warning stored in the background script
+                 // belongs to the exact URL the user is currently viewing.
+                 if (response.warning.url === activeUrl) {
+                     setScanResult(response.warning);
+                 }
              }
           });
         }
@@ -234,12 +242,12 @@ function SettingsPanel({ settings, onSave }: any) {
               className="mt-1"
             />
             <div>
-              <div className="font-semibold text-slate-900">Custom API</div>
+              <div className="font-semibold text-slate-900">Custom Cloud API</div>
               <div className="text-xs text-slate-500 mt-1">For local servers (LMStudio, Ollama) or custom OpenAI-compatible endpoints.</div>
             </div>
           </label>
 
-          {/*<label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${provider === 'nano' ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
+          <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${provider === 'nano' ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
             <input
               type="radio"
               name="provider"
@@ -252,7 +260,7 @@ function SettingsPanel({ settings, onSave }: any) {
               <div className="font-semibold text-slate-900">Local AI (Gemini Nano)</div>
               <div className="text-xs text-slate-500 mt-1">100% private. Requires Chrome flag setup.</div>
             </div>
-          </label>*/}
+          </label>
         </div>
       </div>
 
