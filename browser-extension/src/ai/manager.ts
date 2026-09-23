@@ -1,9 +1,10 @@
 import type { AIResponse, AISettings } from './types';
 import { analyzeWithNano, isNanoAvailable } from './nano';
 import { analyzeWithCloud } from './cloud';
+import { analyzeWithGemini } from './gemini';
 
 export const DEFAULT_SETTINGS: AISettings = {
-  provider: 'cloud',
+  provider: 'gemini', // Set Gemini as default since the user specifically asked for it
   warningThreshold: 0.5
 };
 
@@ -11,7 +12,6 @@ export async function getSettings(): Promise<AISettings> {
   if (typeof chrome !== 'undefined' && chrome.storage) {
     return new Promise((resolve) => {
       chrome.storage.local.get(['aiSettings'], (result: any) => {
-        // Merge with DEFAULT_SETTINGS to ensure new properties like warningThreshold exist for old users
         resolve({ ...DEFAULT_SETTINGS, ...(result.aiSettings || {}) });
       });
     });
@@ -38,13 +38,12 @@ export async function analyze(content: string, type: 'url' | 'content'): Promise
       throw new Error('NANO_NOT_AVAILABLE');
     }
     result = await analyzeWithNano(content, type);
+  } else if (settings.provider === 'gemini') {
+    result = await analyzeWithGemini(content, type, settings);
   } else {
     result = await analyzeWithCloud(content, type, settings);
   }
 
-  // Enforce user's custom warning threshold
-  // If the AI gave a high score, but technically said isSuspicious=false, we override it.
-  // If the AI gave a low score, but said isSuspicious=true, we un-flag it.
   if (result.score >= settings.warningThreshold) {
       result.isSuspicious = true;
   } else {

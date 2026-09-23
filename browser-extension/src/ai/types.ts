@@ -1,9 +1,10 @@
-export type AIProvider = 'nano' | 'cloud';
+export type AIProvider = 'nano' | 'cloud' | 'gemini';
 
 export interface AISettings {
   provider: AIProvider;
   cloudApiKey?: string;
   cloudApiUrl?: string;
+  geminiApiKey?: string;
   warningThreshold: number; // 0.0 to 1.0
 }
 
