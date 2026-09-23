@@ -234,12 +234,12 @@ function SettingsPanel({ settings, onSave }: any) {
               className="mt-1"
             />
             <div>
-              <div className="font-semibold text-slate-900">Custom Cloud API</div>
+              <div className="font-semibold text-slate-900">Custom API</div>
               <div className="text-xs text-slate-500 mt-1">For local servers (LMStudio, Ollama) or custom OpenAI-compatible endpoints.</div>
             </div>
           </label>
 
-          <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${provider === 'nano' ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
+          {/*<label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${provider === 'nano' ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
             <input
               type="radio"
               name="provider"
@@ -252,7 +252,7 @@ function SettingsPanel({ settings, onSave }: any) {
               <div className="font-semibold text-slate-900">Local AI (Gemini Nano)</div>
               <div className="text-xs text-slate-500 mt-1">100% private. Requires Chrome flag setup.</div>
             </div>
-          </label>
+          </label>*/}
         </div>
       </div>
 
