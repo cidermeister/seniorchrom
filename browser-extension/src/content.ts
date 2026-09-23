@@ -76,7 +76,7 @@ const initOverlay = async () => {
           }, 1500);
       }
   } catch (err) {
-      console.error("Scam Guard auto-scan error:", err);
+      console.error("James auto-scan error:", err);
   }
 };
 

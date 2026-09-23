@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, ShieldAlert, ShieldCheck, Settings, Loader2, Search, ExternalLink } from 'lucide-react';
+import {  ShieldAlert, ShieldCheck, Settings, Loader2, Search, ExternalLink } from 'lucide-react';
 import { analyze, getSettings, saveSettings } from './ai/manager';
 import type { AISettings, AIResponse } from './ai/types';
 
@@ -68,8 +68,8 @@ function App() {
     <div className="w-96 min-h-[400px] bg-white flex flex-col text-gray-800 font-sans">
       <header className="bg-slate-900 text-white p-4 flex items-center justify-between shadow-md z-10">
         <div className="flex items-center gap-2">
-          <Shield className="text-blue-400" size={24} />
-          <h1 className="text-lg font-bold">Scam Guard AI</h1>
+          <img src="/james.png" alt="James Logo" className="w-6 h-6" />
+          <h1 className="text-lg font-bold">James</h1>
         </div>
         <button
           onClick={() => setActiveTab(activeTab === 'settings' ? 'status' : 'settings')}

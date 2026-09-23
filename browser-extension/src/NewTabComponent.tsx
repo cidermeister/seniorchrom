@@ -59,13 +59,13 @@ const NewTabComponent = () => {
       {/* Main Content */}
       <div className="flex flex-col items-center max-w-3xl w-full">
         <div className="flex items-center gap-3 mb-8 text-slate-800">
-          <div className="p-3 bg-blue-100 rounded-2xl text-blue-600">
-            <Shield size={48} />
+          <div className="p-3 bg-slate-100 rounded-2xl border border-slate-200 shadow-sm">
+            <img src="/james.png" alt="James Logo" className="w-12 h-12" />
           </div>
-          <h1 className="text-5xl font-bold tracking-tight">Scam Guard</h1>
+          <h1 className="text-5xl font-bold tracking-tight">James</h1>
         </div>
 
-        <p className="text-slate-500 mb-8 text-lg">Your local AI-powered browser guardian.</p>
+        <p className="text-slate-500 mb-8 text-lg">Your AI butler for safe browsing.</p>
 
         {/* Search Bar */}
         <form onSubmit={handleSearch} className="w-full max-w-2xl relative group">
