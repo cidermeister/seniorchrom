@@ -9,7 +9,7 @@ export async function analyzeWithGemini(content: string, type: 'url' | 'content'
   const promptText = type === 'url' ? getUrlPrompt(content) : getContentPrompt(content);
 
   // Use configured model or fallback
-  const modelName = settings.geminiModel || 'gemini-1.5-flash';
+  const modelName = settings.geminiModel || 'gemini-3.5-flash-lite';
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${settings.geminiApiKey.trim()}`;
 
   try {
