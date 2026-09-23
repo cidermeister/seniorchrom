@@ -1,33 +1,37 @@
 import type { AIResponse } from './types';
 
-// Declare the experimental window.ai for TypeScript
+// Declare the experimental ai for TypeScript on globalThis
 declare global {
-  interface Window {
-    ai?: {
-      assistant?: {
-        create: () => Promise<{
-          prompt: (text: string) => Promise<string>;
-        }>;
-      };
-      // fallback for older proposals
-      createTextSession?: () => Promise<any>;
+  // eslint-disable-next-line no-var
+  var ai: {
+    languageModel?: {
+      create: () => Promise<{ prompt: (text: string) => Promise<string> }>;
     };
-  }
+    assistant?: {
+      create: () => Promise<{ prompt: (text: string) => Promise<string> }>;
+    };
+    createTextSession?: () => Promise<any>;
+  } | undefined;
 }
 
 let nanoSession: any = null;
 
 export async function isNanoAvailable(): Promise<boolean> {
-  return typeof window !== 'undefined' && (!!window.ai?.assistant || !!window.ai?.createTextSession);
+  const aiObj = globalThis.ai;
+  return !!aiObj && (!!aiObj.languageModel || !!aiObj.assistant || !!aiObj.createTextSession);
 }
 
 export async function initNanoSession() {
   if (nanoSession) return nanoSession;
 
-  if (window.ai?.assistant?.create) {
-    nanoSession = await window.ai.assistant.create();
-  } else if (window.ai?.createTextSession) {
-    nanoSession = await window.ai.createTextSession();
+  const aiObj = globalThis.ai;
+
+  if (aiObj?.languageModel?.create) {
+    nanoSession = await aiObj.languageModel.create();
+  } else if (aiObj?.assistant?.create) {
+    nanoSession = await aiObj.assistant.create();
+  } else if (aiObj?.createTextSession) {
+    nanoSession = await aiObj.createTextSession();
   } else {
     throw new Error('Gemini Nano is not available in this browser context.');
   }

@@ -8,7 +8,7 @@ const NewTabComponent = () => {
 
   useEffect(() => {
     // Check if window.ai is available
-    isNanoAvailable().then(setNanoAvailable).catch(() => setNanoAvailable(false));
+    isNanoAvailable().then((v) => { console.log('Nano available:', v); setNanoAvailable(v); }).catch(() => setNanoAvailable(false));
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
