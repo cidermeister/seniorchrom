@@ -1,20 +1,12 @@
 import type { AIResponse, AISettings } from './types';
+import { SYSTEM_PROMPT, getUrlPrompt, getContentPrompt } from './prompts';
 
 export async function analyzeWithCloud(content: string, type: 'url' | 'content', settings: AISettings): Promise<AIResponse> {
   if (!settings.cloudApiUrl) {
     throw new Error("Cloud API URL is not configured. Please add an API URL in settings.");
   }
 
-  let promptText = '';
-  if (type === 'url') {
-    promptText = `Analyze this URL to determine if it belongs to a scam, phishing, or deceptive website.
-URL: "${content}"
-Reply strictly with a JSON object in this exact format, with no extra text: {"isSuspicious": boolean, "score": number (0 to 1), "reasoning": "short explanation"}`;
-  } else {
-     promptText = `Analyze this webpage content to determine if it is a scam, phishing attempt, or overcharging for a free/cheap service (e.g. EHIC, Vignette).
-Content snippet: "${content.substring(0, 4000)}"
-Reply strictly with a JSON object in this exact format, with no extra text: {"isSuspicious": boolean, "score": number (0 to 1), "reasoning": "short explanation"}`;
-  }
+  const promptText = type === 'url' ? getUrlPrompt(content) : getContentPrompt(content);
 
   // Normalize LMStudio / OpenAI endpoint
   // Handles http://localhost:1234 or http://localhost:1234/
@@ -45,7 +37,7 @@ Reply strictly with a JSON object in this exact format, with no extra text: {"is
         body: JSON.stringify({
           model: "local-model",
           messages: [
-            { role: "system", content: "You are a cybersecurity AI. Always reply with valid JSON only." },
+            { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content: promptText }
           ],
           temperature: 0.1

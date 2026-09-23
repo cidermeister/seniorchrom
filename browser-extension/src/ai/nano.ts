@@ -1,14 +1,15 @@
 import type { AIResponse } from './types';
+import { SYSTEM_PROMPT, getUrlPrompt, getContentPrompt } from './prompts';
 
 // Declare the experimental ai for TypeScript on globalThis
 declare global {
   // eslint-disable-next-line no-var
   var ai: {
     languageModel?: {
-      create: () => Promise<{ prompt: (text: string) => Promise<string> }>;
+      create: (options?: any) => Promise<{ prompt: (text: string) => Promise<string> }>;
     };
     assistant?: {
-      create: () => Promise<{ prompt: (text: string) => Promise<string> }>;
+      create: (options?: any) => Promise<{ prompt: (text: string) => Promise<string> }>;
     };
     createTextSession?: () => Promise<any>;
   } | undefined;
@@ -26,10 +27,24 @@ export async function initNanoSession() {
 
   const aiObj = globalThis.ai;
 
+  // Try to pass the system prompt as initial context if supported by the local API
+  const options = {
+      systemPrompt: SYSTEM_PROMPT
+  };
+
   if (aiObj?.languageModel?.create) {
-    nanoSession = await aiObj.languageModel.create();
+    // Newer API might support systemPrompt configuration
+    try {
+        nanoSession = await aiObj.languageModel.create(options);
+    } catch(e) {
+        nanoSession = await aiObj.languageModel.create();
+    }
   } else if (aiObj?.assistant?.create) {
-    nanoSession = await aiObj.assistant.create();
+    try {
+        nanoSession = await aiObj.assistant.create(options);
+    } catch(e) {
+        nanoSession = await aiObj.assistant.create();
+    }
   } else if (aiObj?.createTextSession) {
     nanoSession = await aiObj.createTextSession();
   } else {
@@ -43,18 +58,12 @@ export async function analyzeWithNano(content: string, type: 'url' | 'content'):
   try {
     const session = await initNanoSession();
 
-    let promptText = '';
-    if (type === 'url') {
-      promptText = `Analyze this URL to determine if it belongs to a scam, phishing, or deceptive website.
-URL: "${content}"
-Reply strictly with a JSON object in this exact format, with no extra text: {"isSuspicious": boolean, "score": number (0 to 1), "reasoning": "short explanation"}`;
-    } else {
-       promptText = `Analyze this webpage content to determine if it is a scam, phishing attempt, or overcharging for a free/cheap service (e.g. EHIC, Vignette).
-Content snippet: "${content.substring(0, 4000)}"
-Reply strictly with a JSON object in this exact format, with no extra text: {"isSuspicious": boolean, "score": number (0 to 1), "reasoning": "short explanation"}`;
-    }
+    // For Nano, since system prompt injection isn't always reliable across experimental versions,
+    // we prepend the system prompt instructions directly to the user prompt just in case.
+    const basePrompt = type === 'url' ? getUrlPrompt(content) : getContentPrompt(content);
+    const combinedPrompt = `${SYSTEM_PROMPT}\n\nTask:\n${basePrompt}`;
 
-    const resultString = await session.prompt(promptText);
+    const resultString = await session.prompt(combinedPrompt);
 
     try {
       // Clean up potential markdown formatting from AI output
