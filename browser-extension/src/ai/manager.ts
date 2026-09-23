@@ -3,14 +3,16 @@ import { analyzeWithNano, isNanoAvailable } from './nano';
 import { analyzeWithCloud } from './cloud';
 
 export const DEFAULT_SETTINGS: AISettings = {
-  provider: 'cloud'
+  provider: 'cloud',
+  warningThreshold: 0.5
 };
 
 export async function getSettings(): Promise<AISettings> {
   if (typeof chrome !== 'undefined' && chrome.storage) {
     return new Promise((resolve) => {
       chrome.storage.local.get(['aiSettings'], (result: any) => {
-        resolve(result.aiSettings || DEFAULT_SETTINGS);
+        // Merge with DEFAULT_SETTINGS to ensure new properties like warningThreshold exist for old users
+        resolve({ ...DEFAULT_SETTINGS, ...(result.aiSettings || {}) });
       });
     });
   }
@@ -28,13 +30,26 @@ export async function saveSettings(settings: AISettings): Promise<void> {
 export async function analyze(content: string, type: 'url' | 'content'): Promise<AIResponse> {
   const settings = await getSettings();
 
+  let result: AIResponse;
+
   if (settings.provider === 'nano') {
     const available = await isNanoAvailable();
     if (!available) {
       throw new Error('NANO_NOT_AVAILABLE');
     }
-    return analyzeWithNano(content, type);
+    result = await analyzeWithNano(content, type);
   } else {
-    return analyzeWithCloud(content, type, settings);
+    result = await analyzeWithCloud(content, type, settings);
   }
+
+  // Enforce user's custom warning threshold
+  // If the AI gave a high score, but technically said isSuspicious=false, we override it.
+  // If the AI gave a low score, but said isSuspicious=true, we un-flag it.
+  if (result.score >= settings.warningThreshold) {
+      result.isSuspicious = true;
+  } else {
+      result.isSuspicious = false;
+  }
+
+  return result;
 }

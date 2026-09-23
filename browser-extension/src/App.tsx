@@ -7,7 +7,7 @@ import './App.css';
 function App() {
   const [activeTab, setActiveTab] = useState<'status' | 'settings'>('status');
   const [loading, setLoading] = useState(false);
-  const [settings, setSettingsState] = useState<AISettings>({ provider: 'cloud' });
+  const [settings, setSettingsState] = useState<AISettings>({ provider: 'cloud', warningThreshold: 0.5 });
   const [currentUrl, setCurrentUrl] = useState('');
   const [scanResult, setScanResult] = useState<AIResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -156,8 +156,8 @@ function StatusPanel({ currentUrl, scanResult, loading, error, onScanClick }: an
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-6 text-center">
             <Search size={40} className="mb-3 opacity-50" />
-            <p className="text-sm">URL intent is checked automatically.</p>
-            <p className="text-sm mt-1">Click below to do a deep scan of the page content for overcharging or scams.</p>
+            <p className="text-sm">Page is actively scanned in background.</p>
+            <p className="text-sm mt-1">Click below to force a re-scan.</p>
           </div>
         )}
       </div>
@@ -174,7 +174,7 @@ function StatusPanel({ currentUrl, scanResult, loading, error, onScanClick }: an
             Scanning Content...
           </>
         ) : (
-          'Deep Scan Page Content'
+          'Force Deep Scan'
         )}
       </button>
     </div>
@@ -185,15 +185,37 @@ function SettingsPanel({ settings, onSave }: any) {
   const [provider, setProvider] = useState(settings.provider);
   const [cloudApiKey, setCloudApiKey] = useState(settings.cloudApiKey || '');
   const [cloudApiUrl, setCloudApiUrl] = useState(settings.cloudApiUrl || '');
+  const [warningThreshold, setWarningThreshold] = useState(settings.warningThreshold * 100);
 
   const handleSave = () => {
-    onSave({ provider, cloudApiKey, cloudApiUrl });
+    onSave({ provider, cloudApiKey, cloudApiUrl, warningThreshold: warningThreshold / 100 });
   };
 
   return (
     <div className="flex flex-col gap-5 animate-in slide-in-from-right-4 duration-200">
       <div>
-        <h2 className="text-lg font-bold text-slate-900 mb-4">AI Settings</h2>
+        <h2 className="text-lg font-bold text-slate-900 mb-4">Settings</h2>
+
+        <div className="space-y-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6">
+          <div>
+             <label className="flex items-center justify-between text-sm font-semibold text-slate-700 mb-3">
+               <span>Warning Threshold</span>
+               <span className="bg-slate-100 px-2 py-1 rounded text-slate-600">{warningThreshold}%</span>
+             </label>
+             <input
+               type="range"
+               min="10"
+               max="90"
+               step="5"
+               value={warningThreshold}
+               onChange={(e) => setWarningThreshold(Number(e.target.value))}
+               className="w-full accent-blue-600"
+             />
+             <p className="text-xs text-slate-500 mt-2">
+               If a site's AI risk score is higher than this percentage, the warning popup will be displayed.
+             </p>
+          </div>
+        </div>
 
         <div className="space-y-3">
           <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${provider === 'nano' ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>

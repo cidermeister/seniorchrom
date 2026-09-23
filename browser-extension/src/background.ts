@@ -28,23 +28,36 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
   }
 
-  // Handle URL intent analysis requests from Content script to bypass CSP
+  // Handle URL intent analysis requests
   if (message.type === 'ANALYZE_URL') {
       const tabId = sender.tab?.id;
       analyze(message.url, 'url')
           .then((result) => {
-              // Automatically store if suspicious so the popup can see it too
               if (result.isSuspicious && tabId) {
                  chrome.storage.local.set({ [`warning_${tabId}`]: { url: message.url, ...result, timestamp: Date.now() } });
               }
               sendResponse(result);
           })
           .catch((err) => {
-              console.error("Background Analyze Error:", err);
-              // Send default safe to prevent UI breaking
               sendResponse({ isSuspicious: false, score: 0, reasoning: err.message });
           });
-      return true; // Keep channel open for async fetch
+      return true;
+  }
+
+  // Handle Content analysis requests (Deep Scan)
+  if (message.type === 'ANALYZE_CONTENT') {
+      const tabId = sender.tab?.id;
+      analyze(message.content, 'content')
+          .then((result) => {
+              if (result.isSuspicious && tabId) {
+                 chrome.storage.local.set({ [`warning_${tabId}`]: { url: message.url, ...result, timestamp: Date.now() } });
+              }
+              sendResponse(result);
+          })
+          .catch((err) => {
+              sendResponse({ isSuspicious: false, score: 0, reasoning: err.message });
+          });
+      return true;
   }
 });
 
