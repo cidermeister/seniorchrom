@@ -6,7 +6,7 @@ import { analyzeWithGemini } from './gemini';
 export const DEFAULT_SETTINGS: AISettings = {
   provider: 'gemini',
   warningThreshold: 0.5,
-  geminiModel: 'gemini-3.5-flash-lite'
+  geminiModel: 'gemini-1.5-flash'
 };
 
 export async function getSettings(): Promise<AISettings> {

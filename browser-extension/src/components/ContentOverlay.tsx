@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import type { AIResponse } from '../ai/types';
-// We import Tailwind styles directly for the shadow DOM
 import styles from '../index.css?inline';
 
 interface WarningData extends AIResponse {
@@ -13,11 +12,19 @@ const ContentOverlay: React.FC = () => {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    // Listen for events dispatched from the content script
     const handleWarningEvent = (e: Event) => {
         const customEvent = e as CustomEvent<WarningData>;
         if (customEvent.detail) {
-            setWarning(customEvent.detail);
+            // Prevent refreshing the popup if we already have a warning for this exact URL.
+            // This stops the fast "content" scan from flashing over the "url" scan if they both trigger.
+            setWarning((prevWarning) => {
+                if (prevWarning && prevWarning.url === customEvent.detail.url) {
+                    return prevWarning; // Keep the existing warning, do not update state
+                }
+                // If it's a new URL or our first warning, set it and reset the dismissed state
+                setDismissed(false);
+                return customEvent.detail;
+            });
         }
     };
 
@@ -34,7 +41,7 @@ const ContentOverlay: React.FC = () => {
   };
 
   if (!warning || dismissed) {
-    return <style>{styles}</style>; // Still inject styles so it's ready
+    return <style>{styles}</style>;
   }
 
   return (
