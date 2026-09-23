@@ -8,7 +8,7 @@ export async function analyzeWithGemini(content: string, type: 'url' | 'content'
 
   const promptText = type === 'url' ? getUrlPrompt(content) : getContentPrompt(content);
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite:generateContent?key=${settings.geminiApiKey.trim()}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${settings.geminiApiKey.trim()}`;
 
   try {
       const response = await fetch(endpoint, {
