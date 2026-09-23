@@ -4,8 +4,9 @@ import { analyzeWithCloud } from './cloud';
 import { analyzeWithGemini } from './gemini';
 
 export const DEFAULT_SETTINGS: AISettings = {
-  provider: 'gemini', // Set Gemini as default since the user specifically asked for it
-  warningThreshold: 0.5
+  provider: 'gemini',
+  warningThreshold: 0.5,
+  geminiModel: 'gemini-1.5-flash'
 };
 
 export async function getSettings(): Promise<AISettings> {

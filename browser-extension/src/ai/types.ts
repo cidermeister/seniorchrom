@@ -5,6 +5,7 @@ export interface AISettings {
   cloudApiKey?: string;
   cloudApiUrl?: string;
   geminiApiKey?: string;
+  geminiModel?: string;
   warningThreshold: number; // 0.0 to 1.0
 }
 

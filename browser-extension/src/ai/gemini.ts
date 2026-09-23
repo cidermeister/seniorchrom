@@ -8,8 +8,9 @@ export async function analyzeWithGemini(content: string, type: 'url' | 'content'
 
   const promptText = type === 'url' ? getUrlPrompt(content) : getContentPrompt(content);
 
-  // Use Gemini 1.5 Flash as it is fast and cheap/free tier
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${settings.geminiApiKey}`;
+  // Use configured model or fallback
+  const modelName = settings.geminiModel || 'gemini-1.5-flash';
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${settings.geminiApiKey.trim()}`;
 
   try {
       const response = await fetch(endpoint, {
@@ -18,7 +19,7 @@ export async function analyzeWithGemini(content: string, type: 'url' | 'content'
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          system_instruction: {
+          systemInstruction: {
             parts: [{ text: SYSTEM_PROMPT }]
           },
           contents: [{
@@ -32,7 +33,20 @@ export async function analyzeWithGemini(content: string, type: 'url' | 'content'
       });
 
       if (!response.ok) {
-        throw new Error(`Gemini API Error: ${response.status} ${response.statusText}`);
+        let errorMsg = `Gemini API Error: ${response.status} ${response.statusText}`;
+        try {
+           const errData = await response.json();
+           if (errData.error && errData.error.message) {
+               errorMsg = `Gemini API Error: ${errData.error.message}`;
+           }
+        } catch(e) {}
+
+        // Add helpful hint for 404s
+        if (response.status === 404) {
+            errorMsg = `Gemini API Error 404: The model "${modelName}" might not exist or may be misspelled.`;
+        }
+
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();
@@ -61,6 +75,6 @@ export async function analyzeWithGemini(content: string, type: 'url' | 'content'
       }
   } catch (err: any) {
       console.error("Gemini Fetch Error:", err);
-      throw new Error(`Failed to connect to Gemini API: ${err.message}`);
+      throw new Error(err.message || "Failed to connect to Gemini API");
   }
 }
