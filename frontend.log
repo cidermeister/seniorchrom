@@ -1,0 +1,13 @@
+
+> browser-extension@0.0.0 dev
+> vite
+
+`server.hmr.protocol/host/port/path/clientPort/timeout/server` is deprecated. Use `server.ws.*` instead. Note that this option may be set by a plugin. Set VITE_DEPRECATION_TRACE=1 to see where it is called.
+
+  VITE v8.3.0  ready in 535 ms
+
+  B R O W S E R
+  E X T E N S I O N
+  T O O L S
+
+  ➜  CRXJS: Load dist as unpacked extension

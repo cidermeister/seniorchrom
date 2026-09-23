@@ -183,10 +183,39 @@ function SettingsPanel({ settings, onSave }: any) {
   const [cloudApiKey, setCloudApiKey] = useState(settings.cloudApiKey || '');
   const [cloudApiUrl, setCloudApiUrl] = useState(settings.cloudApiUrl || '');
   const [geminiApiKey, setGeminiApiKey] = useState(settings.geminiApiKey || '');
+  const [accessToken, setAccessToken] = useState(settings.accessToken || '');
   const [warningThreshold, setWarningThreshold] = useState((settings.warningThreshold || 0.5) * 100);
 
   const handleSave = () => {
-    onSave({ provider, cloudApiKey, cloudApiUrl, geminiApiKey, warningThreshold: warningThreshold / 100 });
+    onSave({ provider, cloudApiKey, cloudApiUrl, geminiApiKey, accessToken, warningThreshold: warningThreshold / 100 });
+  };
+
+  const handlePremiumLogin = () => {
+    const backendUrl = 'http://localhost:3000'; // Change in production
+    const redirectUri = chrome.identity.getRedirectURL();
+    const authUrl = `${backendUrl}/api/auth/google?redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+    chrome.identity.launchWebAuthFlow(
+      {
+        url: authUrl,
+        interactive: true,
+      },
+      (redirect_url) => {
+        if (chrome.runtime.lastError) {
+          console.error("Auth error:", chrome.runtime.lastError);
+          return;
+        }
+        if (redirect_url) {
+          const url = new URL(redirect_url);
+          const token = url.searchParams.get('token');
+          if (token) {
+            setAccessToken(token);
+            setProvider('premium');
+            onSave({ provider: 'premium', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: token, warningThreshold: warningThreshold / 100 });
+          }
+        }
+      }
+    );
   };
 
   return (
@@ -261,8 +290,55 @@ function SettingsPanel({ settings, onSave }: any) {
               <div className="text-xs text-slate-500 mt-1">100% private. Requires Chrome flag setup.</div>
             </div>
           </label>
+
+          <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${provider === 'premium' ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
+            <input
+              type="radio"
+              name="provider"
+              value="premium"
+              checked={provider === 'premium'}
+              onChange={() => setProvider('premium')}
+              className="mt-1"
+            />
+            <div>
+              <div className="font-semibold text-slate-900 flex items-center gap-2">
+                Premium Cloud AI
+                <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide">Pro</span>
+              </div>
+              <div className="text-xs text-slate-500 mt-1">Advanced scanning with no setup required.</div>
+            </div>
+          </label>
         </div>
       </div>
+
+      {provider === 'premium' && (
+        <div className="space-y-4 bg-amber-50/50 p-4 rounded-xl border border-amber-100 shadow-sm animate-in fade-in flex flex-col items-center text-center">
+          {accessToken ? (
+            <div>
+              <div className="text-green-600 font-semibold mb-2">✓ Active Premium Subscription</div>
+              <button
+                onClick={() => {
+                  setAccessToken('');
+                  onSave({ provider: 'gemini', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: '', warningThreshold: warningThreshold / 100 });
+                }}
+                className="text-xs text-red-500 hover:text-red-700 underline"
+              >
+                Log Out
+              </button>
+            </div>
+          ) : (
+            <div>
+              <p className="text-sm text-slate-700 mb-3">Unlock advanced AI analysis without needing your own API keys or local setup.</p>
+              <button
+                onClick={handlePremiumLogin}
+                className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-sm"
+              >
+                Subscribe / Log In
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {provider === 'gemini' && (
         <div className="space-y-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100 shadow-sm animate-in fade-in">
