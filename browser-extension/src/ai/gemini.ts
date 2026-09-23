@@ -8,9 +8,7 @@ export async function analyzeWithGemini(content: string, type: 'url' | 'content'
 
   const promptText = type === 'url' ? getUrlPrompt(content) : getContentPrompt(content);
 
-  // Use configured model or fallback
-  const modelName = settings.geminiModel || 'gemini-1.5-flash';
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${settings.geminiApiKey.trim()}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite:generateContent?key=${settings.geminiApiKey.trim()}`;
 
   try {
       const response = await fetch(endpoint, {
@@ -41,9 +39,8 @@ export async function analyzeWithGemini(content: string, type: 'url' | 'content'
            }
         } catch(e) {}
 
-        // Add helpful hint for 404s
         if (response.status === 404) {
-            errorMsg = `Gemini API Error 404: The model "${modelName}" might not exist or may be misspelled.`;
+            errorMsg = `Gemini API Error 404: The model might not exist or may be misspelled.`;
         }
 
         throw new Error(errorMsg);
