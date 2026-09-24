@@ -192,8 +192,20 @@ function SettingsPanel({ settings, onSave }: any) {
 
   const handlePremiumLogin = () => {
     const backendUrl = 'http://localhost:3000'; // Change in production
-    const redirectUri = chrome.identity.getRedirectURL();
+
+    // Check if chrome.identity is available (it isn't during local dev via vite preview)
+    const redirectUri = chrome?.identity?.getRedirectURL ? chrome.identity.getRedirectURL() : 'https://mock.redirect.url';
     const authUrl = `${backendUrl}/api/auth/google?redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+    if (!chrome?.identity?.launchWebAuthFlow) {
+        console.error("chrome.identity.launchWebAuthFlow is not available. Ensure you are running this as a Chrome Extension.");
+        // Simulate a successful login for local development outside the extension context
+        const mockToken = "mock_token_" + Date.now();
+        setAccessToken(mockToken);
+        setProvider('premium');
+        onSave({ provider: 'premium', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: mockToken, warningThreshold: warningThreshold / 100 });
+        return;
+    }
 
     chrome.identity.launchWebAuthFlow(
       {
