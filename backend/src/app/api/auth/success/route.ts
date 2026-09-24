@@ -18,6 +18,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing extension_uri' }, { status: 400 });
   }
 
+  // Prevent Open Redirect: In production, ensure the URI belongs to your official Chrome Extension
+  if (process.env.NODE_ENV === 'production') {
+      const allowedId = process.env.EXTENSION_ID; // Provide this in Vercel
+      if (allowedId && !extensionUri.includes(allowedId)) {
+          return NextResponse.json({ error: 'Invalid extension URI' }, { status: 400 });
+      }
+  }
+
   let userEmail = mockEmail;
 
   if (sessionId && process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== 'sk_test_mock') {

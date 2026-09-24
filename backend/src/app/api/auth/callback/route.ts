@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
 
     // Mock stripe checkout flow if no real key
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_mock') {
-        const redirectUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/auth/success`);
+        const redirectUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/mock-checkout`);
         redirectUrl.searchParams.append('email', userEmail);
         redirectUrl.searchParams.append('extension_uri', extensionRedirectUri);
         return NextResponse.redirect(redirectUrl.toString());
