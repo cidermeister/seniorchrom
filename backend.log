@@ -1,0 +1,14 @@
+
+> backend@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+✓ Ready in 603ms
+✓ Running next.config.ts took 52ms
+
+ GET /mock-checkout?email=testuser@example.com&extension_uri=http://localhost:4173 200 in 4.1s (next.js: 3.7s, application-code: 410ms)
+ GET /api/auth/success?email=testuser%40example.com&extension_uri=http%3A%2F%2Flocalhost%3A4173 307 in 1548ms (next.js: 1350ms, application-code: 197ms)
+ GET /mock-checkout?email=testuser@example.com&extension_uri=http://localhost:4173 200 in 67ms (next.js: 10ms, application-code: 57ms)
+ GET /api/auth/success?email=testuser%40example.com&extension_uri=http%3A%2F%2Flocalhost%3A4173 307 in 14ms (next.js: 5ms, application-code: 9ms)
