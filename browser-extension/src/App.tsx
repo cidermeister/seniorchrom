@@ -6,7 +6,7 @@ import type { AISettings, AIResponse } from './ai/types';
 function App() {
   const [activeTab, setActiveTab] = useState<'status' | 'settings'>('status');
   const [loading, setLoading] = useState(false);
-  const [settings, setSettingsState] = useState<AISettings>({ provider: 'gemini', warningThreshold: 0.5 });
+  const [settings, setSettingsState] = useState<AISettings>({ provider: 'gemini', warningThreshold: 0.5, autoScanEnabled: true });
   const [currentUrl, setCurrentUrl] = useState('');
   const [scanResult, setScanResult] = useState<AIResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -222,9 +222,10 @@ function SettingsPanel({ settings, onSave }: any) {
   const [geminiApiKey, setGeminiApiKey] = useState(settings.geminiApiKey || '');
   const [accessToken, setAccessToken] = useState(settings.accessToken || '');
   const [warningThreshold, setWarningThreshold] = useState((settings.warningThreshold || 0.5) * 100);
+  const [autoScanEnabled, setAutoScanEnabled] = useState(settings.autoScanEnabled ?? true);
 
   const handleSave = () => {
-    onSave({ provider, cloudApiKey, cloudApiUrl, geminiApiKey, accessToken, warningThreshold: warningThreshold / 100 });
+    onSave({ provider, cloudApiKey, cloudApiUrl, geminiApiKey, accessToken, warningThreshold: warningThreshold / 100, autoScanEnabled });
   };
 
   const handlePremiumLogin = () => {
@@ -256,7 +257,7 @@ function SettingsPanel({ settings, onSave }: any) {
           if (token) {
             setAccessToken(token);
             setProvider('premium');
-            onSave({ provider: 'premium', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: token, warningThreshold: warningThreshold / 100 });
+            onSave({ provider: 'premium', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: token, warningThreshold: warningThreshold / 100, autoScanEnabled });
           }
         }
       }
@@ -269,6 +270,22 @@ function SettingsPanel({ settings, onSave }: any) {
         <h2 className="text-lg font-bold text-slate-900 mb-4">Settings</h2>
 
         <div className="space-y-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6">
+          <div className="mb-4 pb-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <div className="font-semibold text-slate-900 text-sm">Background Scanning</div>
+              <div className="text-xs text-slate-500 mt-0.5">Automatically scan pages as you browse</div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={autoScanEnabled}
+                onChange={(e) => setAutoScanEnabled(e.target.checked)}
+              />
+              <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
           <div>
              <label className="flex items-center justify-between text-sm font-semibold text-slate-700 mb-3">
                <span>Warning Threshold</span>
@@ -364,7 +381,7 @@ function SettingsPanel({ settings, onSave }: any) {
               <button
                 onClick={() => {
                   setAccessToken('');
-                  onSave({ provider: 'gemini', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: '', warningThreshold: warningThreshold / 100 });
+                  onSave({ provider: 'gemini', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: '', warningThreshold: warningThreshold / 100, autoScanEnabled });
                 }}
                 className="text-xs text-red-500 hover:text-red-700 underline"
               >
