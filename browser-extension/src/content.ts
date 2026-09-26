@@ -53,27 +53,33 @@ const initOverlay = async () => {
   try {
       const url = window.location.href;
       if (!url.startsWith('chrome')) {
+          chrome.storage.local.get(['aiSettings'], (result) => {
+              const settings = result.aiSettings || {} as any;
+              const autoScanEnabled = settings.autoScanEnabled ?? true;
 
-          // Phase 1: Scan URL Intent Immediately
-          chrome.runtime.sendMessage({ type: 'ANALYZE_URL', url }, (response) => {
-              if (response && response.isSuspicious) {
-                  const warningData = { url, ...response, timestamp: Date.now() };
-                  window.dispatchEvent(new CustomEvent('scam-guard-warning', { detail: warningData }));
-              }
-          });
-
-          // Phase 2: Wait 1.5 seconds for React/SPA pages to render, then auto-scan content
-          setTimeout(() => {
-              const textContent = extractPageText();
-              if (textContent.length > 50) {
-                  chrome.runtime.sendMessage({ type: 'ANALYZE_CONTENT', url, content: textContent }, (response) => {
+              if (autoScanEnabled) {
+                  // Phase 1: Scan URL Intent Immediately
+                  chrome.runtime.sendMessage({ type: 'ANALYZE_URL', url }, (response) => {
                       if (response && response.isSuspicious) {
                           const warningData = { url, ...response, timestamp: Date.now() };
                           window.dispatchEvent(new CustomEvent('scam-guard-warning', { detail: warningData }));
                       }
                   });
+
+                  // Phase 2: Wait 1.5 seconds for React/SPA pages to render, then auto-scan content
+                  setTimeout(() => {
+                      const textContent = extractPageText();
+                      if (textContent.length > 50) {
+                          chrome.runtime.sendMessage({ type: 'ANALYZE_CONTENT', url, content: textContent }, (response) => {
+                              if (response && response.isSuspicious) {
+                                  const warningData = { url, ...response, timestamp: Date.now() };
+                                  window.dispatchEvent(new CustomEvent('scam-guard-warning', { detail: warningData }));
+                              }
+                          });
+                      }
+                  }, 1500);
               }
-          }, 1500);
+          });
       }
   } catch (err) {
       console.error("James auto-scan error:", err);
