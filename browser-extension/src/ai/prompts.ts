@@ -7,15 +7,17 @@ CRITICAL INSTRUCTIONS:
 
 Always reply with valid JSON only, in this exact format: {"isSuspicious": boolean, "score": number (0 to 1), "reasoning": "short explanation"}`;
 
-export const getUrlPrompt = (url: string) => `Analyze this URL to determine if it belongs to a scam, phishing, deceptive reseller, or unofficial premium-charging website.
+export const getUrlPrompt = (url: string, language?: string) => `Analyze this URL to determine if it belongs to a scam, phishing, deceptive reseller, or unofficial premium-charging website.
 URL: "${url}"
-Evaluate the domain name and path. If it looks like an official government or primary provider domain, mark it safe. Reply strictly with the requested JSON format.`;
+Evaluate the domain name and path. If it looks like an official government or primary provider domain, mark it safe. Reply strictly with the requested JSON format.
+${language ? `CRITICAL: You MUST write the "reasoning" value in the following language: ${language}` : ''}`;
 
-export const getContentPrompt = (content: string) => `Analyze this webpage content to determine if it is a scam, phishing attempt, or a deceptive reseller overcharging for a free/cheap official service.
+export const getContentPrompt = (content: string, language?: string) => `Analyze this webpage content to determine if it is a scam, phishing attempt, or a deceptive reseller overcharging for a free/cheap official service.
 Look for:
 - Prices that are significantly higher than the official government cost.
 - Hidden disclaimers about being an "independent processing agent" (highly suspicious).
 - If the content indicates it IS the official government provider or primary authority, you MUST mark it as safe (isSuspicious: false).
 
 Content snippet: "${content.substring(0, 4000)}"
-Reply strictly with the requested JSON format.`;
+Reply strictly with the requested JSON format.
+${language ? `CRITICAL: You MUST write the "reasoning" value in the following language: ${language}` : ''}`;

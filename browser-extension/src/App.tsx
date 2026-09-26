@@ -222,9 +222,10 @@ function SettingsPanel({ settings, onSave }: any) {
   const [geminiApiKey, setGeminiApiKey] = useState(settings.geminiApiKey || '');
   const [accessToken, setAccessToken] = useState(settings.accessToken || '');
   const [warningThreshold, setWarningThreshold] = useState((settings.warningThreshold || 0.5) * 100);
+  const [language, setLanguage] = useState(settings.language || globalThis.navigator?.language || 'en-US');
 
   const handleSave = () => {
-    onSave({ provider, cloudApiKey, cloudApiUrl, geminiApiKey, accessToken, warningThreshold: warningThreshold / 100 });
+    onSave({ provider, cloudApiKey, cloudApiUrl, geminiApiKey, accessToken, warningThreshold: warningThreshold / 100, language });
   };
 
   const handlePremiumLogin = () => {
@@ -283,8 +284,20 @@ function SettingsPanel({ settings, onSave }: any) {
                onChange={(e) => setWarningThreshold(Number(e.target.value))}
                className="w-full accent-blue-600"
              />
-             <p className="text-xs text-slate-500 mt-2">
+             <p className="text-xs text-slate-500 mt-2 mb-4">
                If a site's AI risk score is higher than this percentage, the warning popup will be displayed.
+             </p>
+
+             <label className="block text-sm font-semibold text-slate-700 mb-2">Response Language</label>
+             <input
+               type="text"
+               value={language}
+               onChange={(e) => setLanguage(e.target.value)}
+               placeholder="e.g. en-US, fr, es"
+               className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+             />
+             <p className="text-xs text-slate-500 mt-2">
+               Language for AI reasoning and UI. Defaults to your browser's language.
              </p>
           </div>
         </div>

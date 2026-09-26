@@ -11,7 +11,7 @@ export async function analyzeWithPremium(content: string, type: 'url' | 'content
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${settings.accessToken}`
     },
-    body: JSON.stringify({ content, type })
+    body: JSON.stringify({ content, type, language: settings.language })
   });
 
   if (!response.ok) {

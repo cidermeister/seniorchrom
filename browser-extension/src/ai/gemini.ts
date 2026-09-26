@@ -6,7 +6,7 @@ export async function analyzeWithGemini(content: string, type: 'url' | 'content'
     throw new Error("Gemini API Key is not configured. Please add an API Key in settings.");
   }
 
-  const promptText = type === 'url' ? getUrlPrompt(content) : getContentPrompt(content);
+  const promptText = type === 'url' ? getUrlPrompt(content, settings.language) : getContentPrompt(content, settings.language);
 
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${settings.geminiApiKey.trim()}`;
 
