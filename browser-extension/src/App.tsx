@@ -12,30 +12,50 @@ function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getSettings().then(setSettingsState);
-
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0] && tabs[0].url) {
-        setCurrentUrl(tabs[0].url);
-
-        // We only want to show a warning if it explicitly matches the CURRENT URL of the tab.
-        // This prevents showing an old cached warning from a previous page navigation
-        // before the new URL's scan has finished.
-        const activeUrl = tabs[0].url;
-
-        if (tabs[0].id) {
-          chrome.runtime.sendMessage({ type: 'CHECK_TAB_WARNING', tabId: tabs[0].id }, (response) => {
-             if (response && response.warning) {
-                 // Explicitly check that the warning stored in the background script
-                 // belongs to the exact URL the user is currently viewing.
-                 if (response.warning.url === activeUrl) {
-                     setScanResult(response.warning);
-                 }
-             }
-          });
+    getSettings().then((loadedSettings) => {
+        // Handle mock redirect flow returning with a token
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
+            if (token) {
+                const newSettings = { ...loadedSettings, provider: 'premium' as const, accessToken: token };
+                saveSettings(newSettings);
+                setSettingsState(newSettings);
+                // Clean the URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else {
+                setSettingsState(loadedSettings);
+            }
+        } else {
+             setSettingsState(loadedSettings);
         }
-      }
     });
+
+    // Handle fallback if running outside of extension (e.g. vite preview)
+    if (chrome?.tabs?.query) {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (tabs[0] && tabs[0].url) {
+            setCurrentUrl(tabs[0].url);
+
+            // We only want to show a warning if it explicitly matches the CURRENT URL of the tab.
+            // This prevents showing an old cached warning from a previous page navigation
+            // before the new URL's scan has finished.
+            const activeUrl = tabs[0].url;
+
+            if (tabs[0].id) {
+              chrome.runtime.sendMessage({ type: 'CHECK_TAB_WARNING', tabId: tabs[0].id }, (response) => {
+                 if (response && response.warning) {
+                     // Explicitly check that the warning stored in the background script
+                     // belongs to the exact URL the user is currently viewing.
+                     if (response.warning.url === activeUrl) {
+                         setScanResult(response.warning);
+                     }
+                 }
+              });
+            }
+          }
+        });
+    }
   }, []);
 
   const handleSaveSettings = async (newSettings: AISettings) => {
@@ -200,10 +220,47 @@ function SettingsPanel({ settings, onSave }: any) {
   const [cloudApiKey, setCloudApiKey] = useState(settings.cloudApiKey || '');
   const [cloudApiUrl, setCloudApiUrl] = useState(settings.cloudApiUrl || '');
   const [geminiApiKey, setGeminiApiKey] = useState(settings.geminiApiKey || '');
+  const [accessToken, setAccessToken] = useState(settings.accessToken || '');
   const [warningThreshold, setWarningThreshold] = useState((settings.warningThreshold || 0.5) * 100);
 
   const handleSave = () => {
-    onSave({ provider, cloudApiKey, cloudApiUrl, geminiApiKey, warningThreshold: warningThreshold / 100 });
+    onSave({ provider, cloudApiKey, cloudApiUrl, geminiApiKey, accessToken, warningThreshold: warningThreshold / 100 });
+  };
+
+  const handlePremiumLogin = () => {
+    const backendUrl = 'http://localhost:3000'; // Change in production
+
+    // Check if chrome.identity is available (it isn't during local dev via vite preview)
+    const redirectUri = chrome?.identity?.getRedirectURL ? chrome.identity.getRedirectURL() : window.location.origin + window.location.pathname;
+    const authUrl = `${backendUrl}/api/auth/google?redirect_uri=${encodeURIComponent(redirectUri)}`;
+
+    if (!chrome?.identity?.launchWebAuthFlow) {
+        console.warn("chrome.identity is not available. Simulating redirect auth flow for local testing.");
+        window.location.href = authUrl;
+        return;
+    }
+
+    chrome.identity.launchWebAuthFlow(
+      {
+        url: authUrl,
+        interactive: true,
+      },
+      (redirect_url) => {
+        if (chrome.runtime.lastError) {
+          console.error("Auth error:", chrome.runtime.lastError);
+          return;
+        }
+        if (redirect_url) {
+          const url = new URL(redirect_url);
+          const token = url.searchParams.get('token');
+          if (token) {
+            setAccessToken(token);
+            setProvider('premium');
+            onSave({ provider: 'premium', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: token, warningThreshold: warningThreshold / 100 });
+          }
+        }
+      }
+    );
   };
 
   return (
@@ -278,8 +335,55 @@ function SettingsPanel({ settings, onSave }: any) {
               <div className="text-xs text-slate-500 mt-1">100% private. Requires Chrome flag setup.</div>
             </div>
           </label>
+
+          <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${provider === 'premium' ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
+            <input
+              type="radio"
+              name="provider"
+              value="premium"
+              checked={provider === 'premium'}
+              onChange={() => setProvider('premium')}
+              className="mt-1"
+            />
+            <div>
+              <div className="font-semibold text-slate-900 flex items-center gap-2">
+                Premium Cloud AI
+                <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide">Pro</span>
+              </div>
+              <div className="text-xs text-slate-500 mt-1">Advanced scanning with no setup required.</div>
+            </div>
+          </label>
         </div>
       </div>
+
+      {provider === 'premium' && (
+        <div className="space-y-4 bg-amber-50/50 p-4 rounded-xl border border-amber-100 shadow-sm animate-in fade-in flex flex-col items-center text-center">
+          {accessToken ? (
+            <div>
+              <div className="text-green-600 font-semibold mb-2">✓ Active Premium Subscription</div>
+              <button
+                onClick={() => {
+                  setAccessToken('');
+                  onSave({ provider: 'gemini', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: '', warningThreshold: warningThreshold / 100 });
+                }}
+                className="text-xs text-red-500 hover:text-red-700 underline"
+              >
+                Log Out
+              </button>
+            </div>
+          ) : (
+            <div>
+              <p className="text-sm text-slate-700 mb-3">Unlock advanced AI analysis without needing your own API keys or local setup.</p>
+              <button
+                onClick={handlePremiumLogin}
+                className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-sm"
+              >
+                Subscribe / Log In
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {provider === 'gemini' && (
         <div className="space-y-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100 shadow-sm animate-in fade-in">
