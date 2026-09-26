@@ -54,13 +54,15 @@ export async function initNanoSession() {
   return nanoSession;
 }
 
-export async function analyzeWithNano(content: string, type: 'url' | 'content'): Promise<AIResponse> {
+import type { AISettings } from './types';
+
+export async function analyzeWithNano(content: string, type: 'url' | 'content', settings?: AISettings): Promise<AIResponse> {
   try {
     const session = await initNanoSession();
 
     // For Nano, since system prompt injection isn't always reliable across experimental versions,
     // we prepend the system prompt instructions directly to the user prompt just in case.
-    const basePrompt = type === 'url' ? getUrlPrompt(content) : getContentPrompt(content);
+    const basePrompt = type === 'url' ? getUrlPrompt(content, settings?.language) : getContentPrompt(content, settings?.language);
     const combinedPrompt = `${SYSTEM_PROMPT}\n\nTask:\n${basePrompt}`;
 
     const resultString = await session.prompt(combinedPrompt);

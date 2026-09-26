@@ -7,6 +7,7 @@ import { analyzeWithPremium } from './premium';
 export const DEFAULT_SETTINGS: AISettings = {
   provider: 'gemini',
   warningThreshold: 0.5,
+  language: globalThis.navigator?.language || 'en-US'
   autoScanEnabled: true
 };
 
@@ -39,7 +40,7 @@ export async function analyze(content: string, type: 'url' | 'content'): Promise
     if (!available) {
       throw new Error('NANO_NOT_AVAILABLE');
     }
-    result = await analyzeWithNano(content, type);
+    result = await analyzeWithNano(content, type, settings);
   } else if (settings.provider === 'gemini') {
     result = await analyzeWithGemini(content, type, settings);
   } else if (settings.provider === 'premium') {

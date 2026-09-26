@@ -6,7 +6,7 @@ export async function analyzeWithCloud(content: string, type: 'url' | 'content',
     throw new Error("Cloud API URL is not configured. Please add an API URL in settings.");
   }
 
-  const promptText = type === 'url' ? getUrlPrompt(content) : getContentPrompt(content);
+  const promptText = type === 'url' ? getUrlPrompt(content, settings.language) : getContentPrompt(content, settings.language);
 
   // Normalize LMStudio / OpenAI endpoint
   // Handles http://localhost:1234 or http://localhost:1234/
