@@ -223,8 +223,13 @@ function SettingsPanel({ settings, onSave }: any) {
   const [accessToken, setAccessToken] = useState(settings.accessToken || '');
   const [warningThreshold, setWarningThreshold] = useState((settings.warningThreshold || 0.5) * 100);
 
-  const handleSave = () => {
-    onSave({ provider, cloudApiKey, cloudApiUrl, geminiApiKey, accessToken, warningThreshold: warningThreshold / 100 });
+  const updateSetting = (key: string, value: any) => {
+    const newSettings = { provider, cloudApiKey, cloudApiUrl, geminiApiKey, accessToken, warningThreshold: warningThreshold / 100, [key]: value };
+    // Adjust warningThreshold if that's what we are updating
+    if (key === 'warningThreshold') {
+      newSettings.warningThreshold = value / 100;
+    }
+    onSave(newSettings);
   };
 
   const handlePremiumLogin = () => {
@@ -280,7 +285,11 @@ function SettingsPanel({ settings, onSave }: any) {
                max="90"
                step="5"
                value={warningThreshold}
-               onChange={(e) => setWarningThreshold(Number(e.target.value))}
+               onChange={(e) => {
+                 const val = Number(e.target.value);
+                 setWarningThreshold(val);
+                 updateSetting('warningThreshold', val);
+               }}
                className="w-full accent-blue-600"
              />
              <p className="text-xs text-slate-500 mt-2">
@@ -297,7 +306,10 @@ function SettingsPanel({ settings, onSave }: any) {
               name="provider"
               value="gemini"
               checked={provider === 'gemini'}
-              onChange={() => setProvider('gemini')}
+              onChange={() => {
+                setProvider('gemini');
+                updateSetting('provider', 'gemini');
+              }}
               className="mt-1"
             />
             <div>
@@ -312,7 +324,10 @@ function SettingsPanel({ settings, onSave }: any) {
               name="provider"
               value="cloud"
               checked={provider === 'cloud'}
-              onChange={() => setProvider('cloud')}
+              onChange={() => {
+                setProvider('cloud');
+                updateSetting('provider', 'cloud');
+              }}
               className="mt-1"
             />
             <div>
@@ -327,7 +342,10 @@ function SettingsPanel({ settings, onSave }: any) {
               name="provider"
               value="nano"
               checked={provider === 'nano'}
-              onChange={() => setProvider('nano')}
+              onChange={() => {
+                setProvider('nano');
+                updateSetting('provider', 'nano');
+              }}
               className="mt-1"
             />
             <div>
@@ -342,7 +360,10 @@ function SettingsPanel({ settings, onSave }: any) {
               name="provider"
               value="premium"
               checked={provider === 'premium'}
-              onChange={() => setProvider('premium')}
+              onChange={() => {
+                setProvider('premium');
+                updateSetting('provider', 'premium');
+              }}
               className="mt-1"
             />
             <div>
@@ -400,7 +421,10 @@ function SettingsPanel({ settings, onSave }: any) {
             <input
               type="password"
               value={geminiApiKey}
-              onChange={(e) => setGeminiApiKey(e.target.value)}
+              onChange={(e) => {
+                setGeminiApiKey(e.target.value);
+                updateSetting('geminiApiKey', e.target.value);
+              }}
               placeholder="AIzaSy..."
               className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -415,7 +439,10 @@ function SettingsPanel({ settings, onSave }: any) {
             <input
               type="text"
               value={cloudApiUrl}
-              onChange={(e) => setCloudApiUrl(e.target.value)}
+              onChange={(e) => {
+                setCloudApiUrl(e.target.value);
+                updateSetting('cloudApiUrl', e.target.value);
+              }}
               placeholder="http://localhost:1234/v1"
               className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -425,7 +452,10 @@ function SettingsPanel({ settings, onSave }: any) {
             <input
               type="password"
               value={cloudApiKey}
-              onChange={(e) => setCloudApiKey(e.target.value)}
+              onChange={(e) => {
+                setCloudApiKey(e.target.value);
+                updateSetting('cloudApiKey', e.target.value);
+              }}
               placeholder="sk-..."
               className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -433,12 +463,6 @@ function SettingsPanel({ settings, onSave }: any) {
         </div>
       )}
 
-      <button
-        onClick={handleSave}
-        className="mt-4 w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm"
-      >
-        Save Settings
-      </button>
     </div>
   );
 }
