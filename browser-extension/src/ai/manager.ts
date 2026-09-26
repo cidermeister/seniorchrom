@@ -7,7 +7,7 @@ import { analyzeWithPremium } from './premium';
 export const DEFAULT_SETTINGS: AISettings = {
   provider: 'gemini',
   warningThreshold: 0.5,
-  language: globalThis.navigator?.language || 'en-US'
+  language: globalThis.navigator?.language || 'en-US',
   autoScanEnabled: true
 };
 
