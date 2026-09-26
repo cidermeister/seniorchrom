@@ -12,30 +12,50 @@ function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getSettings().then(setSettingsState);
-
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0] && tabs[0].url) {
-        setCurrentUrl(tabs[0].url);
-
-        // We only want to show a warning if it explicitly matches the CURRENT URL of the tab.
-        // This prevents showing an old cached warning from a previous page navigation
-        // before the new URL's scan has finished.
-        const activeUrl = tabs[0].url;
-
-        if (tabs[0].id) {
-          chrome.runtime.sendMessage({ type: 'CHECK_TAB_WARNING', tabId: tabs[0].id }, (response) => {
-             if (response && response.warning) {
-                 // Explicitly check that the warning stored in the background script
-                 // belongs to the exact URL the user is currently viewing.
-                 if (response.warning.url === activeUrl) {
-                     setScanResult(response.warning);
-                 }
-             }
-          });
+    getSettings().then((loadedSettings) => {
+        // Handle mock redirect flow returning with a token
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
+            if (token) {
+                const newSettings = { ...loadedSettings, provider: 'premium' as const, accessToken: token };
+                saveSettings(newSettings);
+                setSettingsState(newSettings);
+                // Clean the URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else {
+                setSettingsState(loadedSettings);
+            }
+        } else {
+             setSettingsState(loadedSettings);
         }
-      }
     });
+
+    // Handle fallback if running outside of extension (e.g. vite preview)
+    if (chrome?.tabs?.query) {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (tabs[0] && tabs[0].url) {
+            setCurrentUrl(tabs[0].url);
+
+            // We only want to show a warning if it explicitly matches the CURRENT URL of the tab.
+            // This prevents showing an old cached warning from a previous page navigation
+            // before the new URL's scan has finished.
+            const activeUrl = tabs[0].url;
+
+            if (tabs[0].id) {
+              chrome.runtime.sendMessage({ type: 'CHECK_TAB_WARNING', tabId: tabs[0].id }, (response) => {
+                 if (response && response.warning) {
+                     // Explicitly check that the warning stored in the background script
+                     // belongs to the exact URL the user is currently viewing.
+                     if (response.warning.url === activeUrl) {
+                         setScanResult(response.warning);
+                     }
+                 }
+              });
+            }
+          }
+        });
+    }
   }, []);
 
   const handleSaveSettings = async (newSettings: AISettings) => {
@@ -194,16 +214,12 @@ function SettingsPanel({ settings, onSave }: any) {
     const backendUrl = 'http://localhost:3000'; // Change in production
 
     // Check if chrome.identity is available (it isn't during local dev via vite preview)
-    const redirectUri = chrome?.identity?.getRedirectURL ? chrome.identity.getRedirectURL() : 'https://mock.redirect.url';
+    const redirectUri = chrome?.identity?.getRedirectURL ? chrome.identity.getRedirectURL() : window.location.origin + window.location.pathname;
     const authUrl = `${backendUrl}/api/auth/google?redirect_uri=${encodeURIComponent(redirectUri)}`;
 
     if (!chrome?.identity?.launchWebAuthFlow) {
-        console.error("chrome.identity.launchWebAuthFlow is not available. Ensure you are running this as a Chrome Extension.");
-        // Simulate a successful login for local development outside the extension context
-        const mockToken = "mock_token_" + Date.now();
-        setAccessToken(mockToken);
-        setProvider('premium');
-        onSave({ provider: 'premium', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: mockToken, warningThreshold: warningThreshold / 100 });
+        console.warn("chrome.identity is not available. Simulating redirect auth flow for local testing.");
+        window.location.href = authUrl;
         return;
     }
 

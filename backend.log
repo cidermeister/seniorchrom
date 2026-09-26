@@ -12,3 +12,5 @@
  GET /api/auth/success?email=testuser%40example.com&extension_uri=http%3A%2F%2Flocalhost%3A4173 307 in 1548ms (next.js: 1350ms, application-code: 197ms)
  GET /mock-checkout?email=testuser@example.com&extension_uri=http://localhost:4173 200 in 67ms (next.js: 10ms, application-code: 57ms)
  GET /api/auth/success?email=testuser%40example.com&extension_uri=http%3A%2F%2Flocalhost%3A4173 307 in 14ms (next.js: 5ms, application-code: 9ms)
+ GET /api/auth/google?redirect_uri=http%3A%2F%2Flocalhost%3A4175%2Findex.html 307 in 1767ms (next.js: 1681ms, application-code: 85ms)
+ GET /api/auth/google?redirect_uri=http%3A%2F%2Flocalhost%3A4175%2Findex.html 307 in 19ms (next.js: 9ms, application-code: 10ms)

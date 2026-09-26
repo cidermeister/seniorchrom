@@ -18,6 +18,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing code or state' }, { status: 400 });
   }
 
+  // Prevent Open Redirect: In production, ensure the URI belongs to your official Chrome Extension
+  if (process.env.NODE_ENV === 'production') {
+      const allowedId = process.env.EXTENSION_ID; // Provide this in Vercel
+      if (allowedId && !extensionRedirectUri.includes(allowedId)) {
+          return NextResponse.json({ error: 'Invalid extension URI' }, { status: 400 });
+      }
+  }
+
   // In a real app, you would exchange the code for tokens here using google api.
   // For the mock, we'll pretend the code is the user's email directly or use a mock email
   // If the user hasn't supplied real keys, let's use a mock authentication bypass
