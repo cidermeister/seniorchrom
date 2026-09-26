@@ -6,7 +6,7 @@ import type { AISettings, AIResponse } from './ai/types';
 function App() {
   const [activeTab, setActiveTab] = useState<'status' | 'settings'>('status');
   const [loading, setLoading] = useState(false);
-  const [settings, setSettingsState] = useState<AISettings>({ provider: 'gemini', warningThreshold: 0.5 });
+  const [settings, setSettingsState] = useState<AISettings>({ provider: 'gemini', warningThreshold: 0.5, autoScanEnabled: true });
   const [currentUrl, setCurrentUrl] = useState('');
   const [scanResult, setScanResult] = useState<AIResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -208,7 +208,7 @@ function StatusPanel({ currentUrl, scanResult, loading, error, onScanClick }: an
             Scanning Content...
           </>
         ) : (
-          'Force Deep Scan'
+          'Ask James'
         )}
       </button>
     </div>
@@ -222,10 +222,16 @@ function SettingsPanel({ settings, onSave }: any) {
   const [geminiApiKey, setGeminiApiKey] = useState(settings.geminiApiKey || '');
   const [accessToken, setAccessToken] = useState(settings.accessToken || '');
   const [warningThreshold, setWarningThreshold] = useState((settings.warningThreshold || 0.5) * 100);
+  const [autoScanEnabled, setAutoScanEnabled] = useState(settings.autoScanEnabled ?? true);
   const [language, setLanguage] = useState(settings.language || globalThis.navigator?.language || 'en-US');
 
-  const handleSave = () => {
-    onSave({ provider, cloudApiKey, cloudApiUrl, geminiApiKey, accessToken, warningThreshold: warningThreshold / 100, language });
+  const updateSetting = (key: string, value: any) => {
+    const newSettings = { provider, cloudApiKey, cloudApiUrl, geminiApiKey, accessToken, autoScanEnabled, language, warningThreshold: warningThreshold / 100, [key]: value };
+    // Adjust warningThreshold if that's what we are updating
+    if (key === 'warningThreshold') {
+      newSettings.warningThreshold = value / 100;
+    }
+    onSave(newSettings);
   };
 
   const handlePremiumLogin = () => {
@@ -257,7 +263,7 @@ function SettingsPanel({ settings, onSave }: any) {
           if (token) {
             setAccessToken(token);
             setProvider('premium');
-            onSave({ provider: 'premium', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: token, warningThreshold: warningThreshold / 100 });
+            onSave({ provider: 'premium', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: token, warningThreshold: warningThreshold / 100, autoScanEnabled });
           }
         }
       }
@@ -270,6 +276,22 @@ function SettingsPanel({ settings, onSave }: any) {
         <h2 className="text-lg font-bold text-slate-900 mb-4">Settings</h2>
 
         <div className="space-y-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6">
+          <div className="mb-4 pb-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <div className="font-semibold text-slate-900 text-sm">Background Scanning</div>
+              <div className="text-xs text-slate-500 mt-0.5">Automatically scan pages as you browse</div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={autoScanEnabled}
+                onChange={(e) => setAutoScanEnabled(e.target.checked)}
+              />
+              <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
           <div>
              <label className="flex items-center justify-between text-sm font-semibold text-slate-700 mb-3">
                <span>Warning Threshold</span>
@@ -281,7 +303,11 @@ function SettingsPanel({ settings, onSave }: any) {
                max="90"
                step="5"
                value={warningThreshold}
-               onChange={(e) => setWarningThreshold(Number(e.target.value))}
+               onChange={(e) => {
+                 const val = Number(e.target.value);
+                 setWarningThreshold(val);
+                 updateSetting('warningThreshold', val);
+               }}
                className="w-full accent-blue-600"
              />
              <p className="text-xs text-slate-500 mt-2 mb-4">
@@ -310,7 +336,10 @@ function SettingsPanel({ settings, onSave }: any) {
               name="provider"
               value="gemini"
               checked={provider === 'gemini'}
-              onChange={() => setProvider('gemini')}
+              onChange={() => {
+                setProvider('gemini');
+                updateSetting('provider', 'gemini');
+              }}
               className="mt-1"
             />
             <div>
@@ -325,7 +354,10 @@ function SettingsPanel({ settings, onSave }: any) {
               name="provider"
               value="cloud"
               checked={provider === 'cloud'}
-              onChange={() => setProvider('cloud')}
+              onChange={() => {
+                setProvider('cloud');
+                updateSetting('provider', 'cloud');
+              }}
               className="mt-1"
             />
             <div>
@@ -333,14 +365,17 @@ function SettingsPanel({ settings, onSave }: any) {
               <div className="text-xs text-slate-500 mt-1">For local servers (LMStudio, Ollama) or custom OpenAI-compatible endpoints.</div>
             </div>
           </label>
-
+{/*} NANO DISABLED FOR THE TIME BEING
           <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${provider === 'nano' ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
             <input
               type="radio"
               name="provider"
               value="nano"
               checked={provider === 'nano'}
-              onChange={() => setProvider('nano')}
+              onChange={() => {
+                setProvider('nano');
+                updateSetting('provider', 'nano');
+              }}
               className="mt-1"
             />
             <div>
@@ -348,14 +383,18 @@ function SettingsPanel({ settings, onSave }: any) {
               <div className="text-xs text-slate-500 mt-1">100% private. Requires Chrome flag setup.</div>
             </div>
           </label>
-
+*/}
+{/* PRO SERVICE NOT YET AVAILABLE}
           <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${provider === 'premium' ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
             <input
               type="radio"
               name="provider"
               value="premium"
               checked={provider === 'premium'}
-              onChange={() => setProvider('premium')}
+              onChange={() => {
+                setProvider('premium');
+                updateSetting('provider', 'premium');
+              }}
               className="mt-1"
             />
             <div>
@@ -366,6 +405,7 @@ function SettingsPanel({ settings, onSave }: any) {
               <div className="text-xs text-slate-500 mt-1">Advanced scanning with no setup required.</div>
             </div>
           </label>
+          */}
         </div>
       </div>
 
@@ -377,7 +417,7 @@ function SettingsPanel({ settings, onSave }: any) {
               <button
                 onClick={() => {
                   setAccessToken('');
-                  onSave({ provider: 'gemini', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: '', warningThreshold: warningThreshold / 100 });
+                  onSave({ provider: 'gemini', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: '', warningThreshold: warningThreshold / 100, autoScanEnabled });
                 }}
                 className="text-xs text-red-500 hover:text-red-700 underline"
               >
@@ -413,7 +453,10 @@ function SettingsPanel({ settings, onSave }: any) {
             <input
               type="password"
               value={geminiApiKey}
-              onChange={(e) => setGeminiApiKey(e.target.value)}
+              onChange={(e) => {
+                setGeminiApiKey(e.target.value);
+                updateSetting('geminiApiKey', e.target.value);
+              }}
               placeholder="AIzaSy..."
               className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -428,7 +471,10 @@ function SettingsPanel({ settings, onSave }: any) {
             <input
               type="text"
               value={cloudApiUrl}
-              onChange={(e) => setCloudApiUrl(e.target.value)}
+              onChange={(e) => {
+                setCloudApiUrl(e.target.value);
+                updateSetting('cloudApiUrl', e.target.value);
+              }}
               placeholder="http://localhost:1234/v1"
               className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -438,7 +484,10 @@ function SettingsPanel({ settings, onSave }: any) {
             <input
               type="password"
               value={cloudApiKey}
-              onChange={(e) => setCloudApiKey(e.target.value)}
+              onChange={(e) => {
+                setCloudApiKey(e.target.value);
+                updateSetting('cloudApiKey', e.target.value);
+              }}
               placeholder="sk-..."
               className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -446,12 +495,6 @@ function SettingsPanel({ settings, onSave }: any) {
         </div>
       )}
 
-      <button
-        onClick={handleSave}
-        className="mt-4 w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm"
-      >
-        Save Settings
-      </button>
     </div>
   );
 }

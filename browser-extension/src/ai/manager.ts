@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS: AISettings = {
   provider: 'gemini',
   warningThreshold: 0.5,
   language: globalThis.navigator?.language || 'en-US'
+  autoScanEnabled: true
 };
 
 export async function getSettings(): Promise<AISettings> {

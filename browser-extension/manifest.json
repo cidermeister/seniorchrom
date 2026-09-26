@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "James",
   "version": "1.0.0",
-  "description": "Your AI butler to detect scams and protect your browsing.",
+  "description": "Not sure about a website? Ask James, your online protection agent to detect scams and protect your browsing.",
   "icons": {
     "16": "public/icon16.png",
     "48": "public/icon48.png",

@@ -8,6 +8,7 @@ export interface AISettings {
   accessToken?: string;
   warningThreshold: number; // 0.0 to 1.0
   language?: string; // e.g. 'en-US'
+  autoScanEnabled?: boolean;
 }
 
 export interface AIResponse {

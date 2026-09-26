@@ -17,9 +17,9 @@ const InfoComponent: React.FC = () => {
 
         <div className="space-y-6 text-gray-800 text-lg leading-relaxed">
           <section>
-            <h2 className="text-2xl font-bold text-black mb-3">Your Digital Butler</h2>
+            <h2 className="text-2xl font-bold text-black mb-3">Your Digital 00 agent</h2>
             <p>
-              James is designed to be your silent, ever-vigilant protector on the web. Much like a traditional butler, James operates in the background, anticipating your needs and shielding you from potential harm without causing unnecessary interruptions.
+              James is designed to be your silent, ever-vigilant protector on the web. Much like a traditional 00 agent, James operates in the background, anticipating your needs and shielding you from potential harm without causing unnecessary interruptions.
             </p>
           </section>
 
@@ -36,7 +36,7 @@ const InfoComponent: React.FC = () => {
           <section>
             <h2 className="text-2xl font-bold text-black mb-3">Privacy First</h2>
             <p>
-              As a proper butler, James respects your privacy above all else. James only analyzes the text content of the pages you visit to determine their safety. If you choose to use the local Gemini Nano model, your data never even leaves your device.
+              As a proper 00 agent, James respects your privacy above all else. James only analyzes the text content of the pages you visit to determine their safety. If you choose to use a local model, your data never even leaves your device.
             </p>
           </section>
 
