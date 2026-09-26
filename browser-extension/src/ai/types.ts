@@ -7,6 +7,7 @@ export interface AISettings {
   geminiApiKey?: string;
   accessToken?: string;
   warningThreshold: number; // 0.0 to 1.0
+  autoScanEnabled?: boolean;
 }
 
 export interface AIResponse {

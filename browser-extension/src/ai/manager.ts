@@ -6,7 +6,8 @@ import { analyzeWithPremium } from './premium';
 
 export const DEFAULT_SETTINGS: AISettings = {
   provider: 'gemini',
-  warningThreshold: 0.5
+  warningThreshold: 0.5,
+  autoScanEnabled: true
 };
 
 export async function getSettings(): Promise<AISettings> {
