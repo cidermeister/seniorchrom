@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShieldAlert, ShieldCheck, Settings, Loader2, Search, ExternalLink } from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Settings, Loader2, Search, ExternalLink, Info, HelpCircle } from 'lucide-react';
 import { analyze, getSettings, saveSettings } from './ai/manager';
 import type { AISettings, AIResponse } from './ai/types';
 
@@ -79,12 +79,29 @@ function App() {
           <img src="/james.png" alt="James Logo" className="w-6 h-6" />
           <h1 className="text-lg font-bold">James</h1>
         </div>
-        <button
-          onClick={() => setActiveTab(activeTab === 'settings' ? 'status' : 'settings')}
-          className="p-1.5 hover:bg-slate-800 rounded-md transition-colors"
-        >
-          <Settings size={20} className={activeTab === 'settings' ? 'text-blue-400' : 'text-slate-300'} />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => chrome.tabs.create({ url: chrome.runtime.getURL('info.html') })}
+            className="p-1.5 hover:bg-slate-800 rounded-md transition-colors"
+            title="Information"
+          >
+            <Info size={18} className="text-slate-300 hover:text-white" />
+          </button>
+          <button
+            onClick={() => chrome.tabs.create({ url: chrome.runtime.getURL('faq.html') })}
+            className="p-1.5 hover:bg-slate-800 rounded-md transition-colors"
+            title="FAQ"
+          >
+            <HelpCircle size={18} className="text-slate-300 hover:text-white" />
+          </button>
+          <button
+            onClick={() => setActiveTab(activeTab === 'settings' ? 'status' : 'settings')}
+            className="p-1.5 hover:bg-slate-800 rounded-md transition-colors ml-1"
+            title="Settings"
+          >
+            <Settings size={20} className={activeTab === 'settings' ? 'text-blue-400' : 'text-slate-300 hover:text-white'} />
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 overflow-y-auto p-4 bg-slate-50">
