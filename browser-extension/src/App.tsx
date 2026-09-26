@@ -208,7 +208,7 @@ function StatusPanel({ currentUrl, scanResult, loading, error, onScanClick }: an
             Scanning Content...
           </>
         ) : (
-          'Force Deep Scan'
+          'Ask James'
         )}
       </button>
     </div>
@@ -352,7 +352,7 @@ function SettingsPanel({ settings, onSave }: any) {
               <div className="text-xs text-slate-500 mt-1">For local servers (LMStudio, Ollama) or custom OpenAI-compatible endpoints.</div>
             </div>
           </label>
-
+{/*} NANO DISABLED FOR THE TIME BEING
           <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${provider === 'nano' ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
             <input
               type="radio"
@@ -370,7 +370,8 @@ function SettingsPanel({ settings, onSave }: any) {
               <div className="text-xs text-slate-500 mt-1">100% private. Requires Chrome flag setup.</div>
             </div>
           </label>
-
+*/}
+{/* PRO SERVICE NOT YET AVAILABLE}
           <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${provider === 'premium' ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500' : 'bg-white border-slate-200 hover:bg-slate-50'}`}>
             <input
               type="radio"
@@ -391,6 +392,7 @@ function SettingsPanel({ settings, onSave }: any) {
               <div className="text-xs text-slate-500 mt-1">Advanced scanning with no setup required.</div>
             </div>
           </label>
+          */}
         </div>
       </div>
 

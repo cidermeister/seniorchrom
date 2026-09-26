@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react';
-import { Search, Shield, Info, CheckCircle2, XCircle } from 'lucide-react';
-import { isNanoAvailable } from './ai/nano';
+import { useState } from 'react';
+import { Search, Shield, XCircle } from 'lucide-react';
+{/*import { isNanoAvailable } from './ai/nano';*/}
 
 const NewTabComponent = () => {
   const [url, setUrl] = useState('');
-  const [nanoAvailable, setNanoAvailable] = useState<boolean | null>(null);
+  {/*const [nanoAvailable, setNanoAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
     // Check if window.ai is available
     isNanoAvailable().then((v) => { console.log('Nano available:', v); setNanoAvailable(v); }).catch(() => setNanoAvailable(false));
-  }, []);
+  }, []);*/}
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +30,7 @@ const NewTabComponent = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center font-sans p-4">
-      {/* Setup Guide / Status Banner */}
+      {/* Setup Guide / Status Banner
       {nanoAvailable === false && (
         <div className="absolute top-8 left-1/2 -translate-x-1/2 w-full max-w-2xl">
           <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-xl shadow-sm flex items-start gap-3">
@@ -54,8 +54,7 @@ const NewTabComponent = () => {
              Nano AI Active
            </div>
         </div>
-      )}
-
+      )}*/}
       {/* Main Content */}
       <div className="flex flex-col items-center max-w-3xl w-full">
         <div className="flex items-center gap-3 mb-8 text-slate-800">
@@ -65,7 +64,7 @@ const NewTabComponent = () => {
           <h1 className="text-5xl font-bold tracking-tight">James</h1>
         </div>
 
-        <p className="text-slate-500 mb-8 text-lg">Your AI butler for safe browsing.</p>
+        <p className="text-slate-500 mb-8 text-lg">Your 00 agent for safe browsing.</p>
 
         {/* Search Bar */}
         <form onSubmit={handleSearch} className="w-full max-w-2xl relative group">
@@ -86,7 +85,7 @@ const NewTabComponent = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 w-full max-w-4xl">
           <FeatureCard
             title="Privacy First"
-            desc="Scans happen directly on your device using Gemini Nano. No data leaves your browser."
+            desc="Scans happen directly on your Model of choice. Your data, your choice."
             icon={<Shield className="text-emerald-500" />}
           />
           <FeatureCard
@@ -96,7 +95,7 @@ const NewTabComponent = () => {
           />
           <FeatureCard
             title="Content Deep-Scan"
-            desc="Checks page text for scams, phishing, or overcharging (like EHIC fees)."
+            desc="Checks page text for scams, phishing, or overcharging (like 3rd party fees for standard costs items (EHIC, tolls, Visas etc))."
             icon={<XCircle className="text-red-500" />}
           />
         </div>

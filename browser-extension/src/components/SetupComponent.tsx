@@ -14,7 +14,7 @@ const SetupComponent: React.FC = () => {
             Welcome!
           </h1>
           <p className="text-xl text-center text-gray-700">
-            I'm James, your AI butler for safe browsing.
+            I'm James, your 00 agent for safe browsing.
           </p>
         </div>
 
@@ -24,7 +24,7 @@ const SetupComponent: React.FC = () => {
               How it Works
             </h2>
             <p className="text-gray-800 text-lg leading-relaxed mb-6">
-              James automatically scans web pages in the background as you browse. If it detects a scam, phishing attempt, or suspicious activity, it will immediately display a warning overlay to protect you.
+              James scans pages as you request. If they detects a scam, phishing attempt, or suspicious activity, they will immediately display a warning overlay to protect you.
             </p>
 
             <h2 className="text-2xl font-bold text-black mb-4 mt-8 border-b-2 border-black inline-block pb-1">
