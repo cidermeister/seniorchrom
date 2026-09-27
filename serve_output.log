@@ -1,0 +1,90 @@
+npm warn exec The following package was not found and will be installed: serve@14.2.6
+ INFO  Accepting connections at http://localhost:3000
+ HTTP  9/27/2026 7:41:46 AM ::1 GET /index.html
+ HTTP  9/27/2026 7:41:46 AM ::1 Returned 301 in 324 ms
+ HTTP  9/27/2026 7:41:47 AM ::1 GET /index
+ HTTP  9/27/2026 7:41:47 AM ::1 Returned 301 in 15 ms
+ HTTP  9/27/2026 7:41:47 AM ::1 GET /
+ HTTP  9/27/2026 7:41:47 AM ::1 Returned 200 in 7 ms
+ HTTP  9/27/2026 7:41:47 AM ::1 GET /assets/index.html-BZl5n3Fb.js
+ HTTP  9/27/2026 7:41:47 AM ::1 GET /assets/src-T305uOoC.css
+ HTTP  9/27/2026 7:41:47 AM ::1 GET /assets/jsx-runtime-CNxEmuZI.js
+ HTTP  9/27/2026 7:41:47 AM ::1 GET /assets/src-D1tC-g4g.js
+ HTTP  9/27/2026 7:41:47 AM ::1 GET /assets/createLucideIcon-DaTeqTW2.js
+ HTTP  9/27/2026 7:41:47 AM ::1 GET /assets/search-ClSSCNYE.js
+ HTTP  9/27/2026 7:41:47 AM ::1 Returned 200 in 20 ms
+ HTTP  9/27/2026 7:41:47 AM ::1 Returned 200 in 27 ms
+ HTTP  9/27/2026 7:41:47 AM ::1 Returned 200 in 26 ms
+ HTTP  9/27/2026 7:41:47 AM ::1 Returned 200 in 26 ms
+ HTTP  9/27/2026 7:41:47 AM ::1 Returned 200 in 27 ms
+ HTTP  9/27/2026 7:41:47 AM ::1 GET /assets/manager-BWo3Ud1g.js
+ HTTP  9/27/2026 7:41:47 AM ::1 Returned 200 in 38 ms
+ HTTP  9/27/2026 7:41:47 AM ::1 Returned 200 in 42 ms
+ HTTP  9/27/2026 7:41:47 AM ::1 GET /james.png
+ HTTP  9/27/2026 7:41:47 AM ::1 Returned 200 in 3 ms
+ HTTP  9/27/2026 7:43:21 AM ::1 GET /index.html
+ HTTP  9/27/2026 7:43:21 AM ::1 Returned 301 in 1 ms
+ HTTP  9/27/2026 7:43:21 AM ::1 GET /index
+ HTTP  9/27/2026 7:43:21 AM ::1 Returned 301 in 1 ms
+ HTTP  9/27/2026 7:43:21 AM ::1 GET /
+ HTTP  9/27/2026 7:43:21 AM ::1 Returned 200 in 1 ms
+ HTTP  9/27/2026 7:43:21 AM ::1 GET /assets/index.html-BZl5n3Fb.js
+ HTTP  9/27/2026 7:43:21 AM ::1 Returned 200 in 1 ms
+ HTTP  9/27/2026 7:43:21 AM ::1 GET /assets/src-T305uOoC.css
+ HTTP  9/27/2026 7:43:21 AM ::1 GET /assets/jsx-runtime-CNxEmuZI.js
+ HTTP  9/27/2026 7:43:21 AM ::1 GET /assets/src-D1tC-g4g.js
+ HTTP  9/27/2026 7:43:21 AM ::1 GET /assets/createLucideIcon-DaTeqTW2.js
+ HTTP  9/27/2026 7:43:21 AM ::1 GET /assets/search-ClSSCNYE.js
+ HTTP  9/27/2026 7:43:21 AM ::1 Returned 200 in 2 ms
+ HTTP  9/27/2026 7:43:21 AM ::1 Returned 200 in 2 ms
+ HTTP  9/27/2026 7:43:21 AM ::1 Returned 200 in 2 ms
+ HTTP  9/27/2026 7:43:21 AM ::1 Returned 200 in 2 ms
+ HTTP  9/27/2026 7:43:21 AM ::1 Returned 200 in 2 ms
+ HTTP  9/27/2026 7:43:21 AM ::1 GET /assets/manager-BWo3Ud1g.js
+ HTTP  9/27/2026 7:43:21 AM ::1 Returned 200 in 1 ms
+ HTTP  9/27/2026 7:43:21 AM ::1 GET /james.png
+ HTTP  9/27/2026 7:43:21 AM ::1 Returned 200 in 2 ms
+ HTTP  9/27/2026 7:44:26 AM ::1 GET /index.html
+ HTTP  9/27/2026 7:44:26 AM ::1 Returned 301 in 1 ms
+ HTTP  9/27/2026 7:44:26 AM ::1 GET /index
+ HTTP  9/27/2026 7:44:26 AM ::1 Returned 301 in 0 ms
+ HTTP  9/27/2026 7:44:26 AM ::1 GET /
+ HTTP  9/27/2026 7:44:26 AM ::1 Returned 200 in 1 ms
+ HTTP  9/27/2026 7:44:26 AM ::1 GET /assets/index.html-BZl5n3Fb.js
+ HTTP  9/27/2026 7:44:26 AM ::1 GET /assets/src-T305uOoC.css
+ HTTP  9/27/2026 7:44:26 AM ::1 GET /assets/jsx-runtime-CNxEmuZI.js
+ HTTP  9/27/2026 7:44:26 AM ::1 GET /assets/src-D1tC-g4g.js
+ HTTP  9/27/2026 7:44:26 AM ::1 GET /assets/createLucideIcon-DaTeqTW2.js
+ HTTP  9/27/2026 7:44:26 AM ::1 GET /assets/search-ClSSCNYE.js
+ HTTP  9/27/2026 7:44:26 AM ::1 Returned 200 in 3 ms
+ HTTP  9/27/2026 7:44:26 AM ::1 Returned 200 in 3 ms
+ HTTP  9/27/2026 7:44:26 AM ::1 Returned 200 in 4 ms
+ HTTP  9/27/2026 7:44:26 AM ::1 Returned 200 in 3 ms
+ HTTP  9/27/2026 7:44:26 AM ::1 Returned 200 in 3 ms
+ HTTP  9/27/2026 7:44:26 AM ::1 Returned 200 in 4 ms
+ HTTP  9/27/2026 7:44:26 AM ::1 GET /assets/manager-BWo3Ud1g.js
+ HTTP  9/27/2026 7:44:26 AM ::1 Returned 200 in 1 ms
+ HTTP  9/27/2026 7:44:26 AM ::1 GET /james.png
+ HTTP  9/27/2026 7:44:26 AM ::1 Returned 200 in 1 ms
+ HTTP  9/27/2026 7:45:24 AM ::1 GET /index.html
+ HTTP  9/27/2026 7:45:24 AM ::1 Returned 301 in 0 ms
+ HTTP  9/27/2026 7:45:24 AM ::1 GET /index
+ HTTP  9/27/2026 7:45:24 AM ::1 Returned 301 in 0 ms
+ HTTP  9/27/2026 7:45:24 AM ::1 GET /
+ HTTP  9/27/2026 7:45:24 AM ::1 Returned 200 in 1 ms
+ HTTP  9/27/2026 7:45:24 AM ::1 GET /assets/index.html-BZl5n3Fb.js
+ HTTP  9/27/2026 7:45:24 AM ::1 GET /assets/src-T305uOoC.css
+ HTTP  9/27/2026 7:45:24 AM ::1 GET /assets/jsx-runtime-CNxEmuZI.js
+ HTTP  9/27/2026 7:45:24 AM ::1 GET /assets/src-D1tC-g4g.js
+ HTTP  9/27/2026 7:45:24 AM ::1 GET /assets/createLucideIcon-DaTeqTW2.js
+ HTTP  9/27/2026 7:45:24 AM ::1 GET /assets/search-ClSSCNYE.js
+ HTTP  9/27/2026 7:45:24 AM ::1 Returned 200 in 3 ms
+ HTTP  9/27/2026 7:45:24 AM ::1 Returned 200 in 2 ms
+ HTTP  9/27/2026 7:45:24 AM ::1 Returned 200 in 3 ms
+ HTTP  9/27/2026 7:45:24 AM ::1 Returned 200 in 3 ms
+ HTTP  9/27/2026 7:45:24 AM ::1 Returned 200 in 3 ms
+ HTTP  9/27/2026 7:45:24 AM ::1 Returned 200 in 3 ms
+ HTTP  9/27/2026 7:45:24 AM ::1 GET /assets/manager-BWo3Ud1g.js
+ HTTP  9/27/2026 7:45:24 AM ::1 Returned 200 in 3 ms
+ HTTP  9/27/2026 7:45:24 AM ::1 GET /james.png
+ HTTP  9/27/2026 7:45:24 AM ::1 Returned 200 in 0 ms

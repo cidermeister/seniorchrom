@@ -2,7 +2,6 @@ import type { AIResponse, AISettings } from './types';
 import { analyzeWithNano, isNanoAvailable } from './nano';
 import { analyzeWithCloud } from './cloud';
 import { analyzeWithGemini } from './gemini';
-import { analyzeWithPremium } from './premium';
 
 export const DEFAULT_SETTINGS: AISettings = {
   provider: 'gemini',
@@ -43,8 +42,6 @@ export async function analyze(content: string, type: 'url' | 'content'): Promise
     result = await analyzeWithNano(content, type, settings);
   } else if (settings.provider === 'gemini') {
     result = await analyzeWithGemini(content, type, settings);
-  } else if (settings.provider === 'premium') {
-    result = await analyzeWithPremium(content, type, settings);
   } else {
     result = await analyzeWithCloud(content, type, settings);
   }
