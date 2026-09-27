@@ -1,4 +1,4 @@
-export type AIProvider = 'nano' | 'cloud' | 'gemini' | 'premium';
+export type AIProvider = 'nano' | 'cloud' | 'gemini';
 
 export interface AISettings {
   provider: AIProvider;

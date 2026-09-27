@@ -17,9 +17,7 @@
   },
   "permissions": [
     "storage",
-    "activeTab",
-    "scripting",
-    "webNavigation"
+    "activeTab"
   ],
   "host_permissions": [
     "<all_urls>"
