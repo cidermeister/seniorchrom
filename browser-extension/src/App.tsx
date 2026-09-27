@@ -13,22 +13,7 @@ function App() {
 
   useEffect(() => {
     getSettings().then((loadedSettings) => {
-        // Handle mock redirect flow returning with a token
-        if (typeof window !== 'undefined') {
-            const params = new URLSearchParams(window.location.search);
-            const token = params.get('token');
-            if (token) {
-                const newSettings = { ...loadedSettings, provider: 'premium' as const, accessToken: token };
-                saveSettings(newSettings);
-                setSettingsState(newSettings);
-                // Clean the URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-            } else {
-                setSettingsState(loadedSettings);
-            }
-        } else {
-             setSettingsState(loadedSettings);
-        }
+      setSettingsState(loadedSettings);
     });
 
     // Handle fallback if running outside of extension (e.g. vite preview)
@@ -220,54 +205,17 @@ function SettingsPanel({ settings, onSave }: any) {
   const [cloudApiKey, setCloudApiKey] = useState(settings.cloudApiKey || '');
   const [cloudApiUrl, setCloudApiUrl] = useState(settings.cloudApiUrl || '');
   const [geminiApiKey, setGeminiApiKey] = useState(settings.geminiApiKey || '');
-  const [accessToken, setAccessToken] = useState(settings.accessToken || '');
   const [warningThreshold, setWarningThreshold] = useState((settings.warningThreshold || 0.5) * 100);
   const [autoScanEnabled, setAutoScanEnabled] = useState(settings.autoScanEnabled ?? true);
   const [language, setLanguage] = useState(settings.language || globalThis.navigator?.language || 'en-US');
 
   const updateSetting = (key: string, value: any) => {
-    const newSettings = { provider, cloudApiKey, cloudApiUrl, geminiApiKey, accessToken, autoScanEnabled, language, warningThreshold: warningThreshold / 100, [key]: value };
+    const newSettings = { provider, cloudApiKey, cloudApiUrl, geminiApiKey, autoScanEnabled, language, warningThreshold: warningThreshold / 100, [key]: value };
     // Adjust warningThreshold if that's what we are updating
     if (key === 'warningThreshold') {
       newSettings.warningThreshold = value / 100;
     }
     onSave(newSettings);
-  };
-
-  const handlePremiumLogin = () => {
-    const backendUrl = 'http://localhost:3000'; // Change in production
-
-    // Check if chrome.identity is available (it isn't during local dev via vite preview)
-    const redirectUri = chrome?.identity?.getRedirectURL ? chrome.identity.getRedirectURL() : window.location.origin + window.location.pathname;
-    const authUrl = `${backendUrl}/api/auth/google?redirect_uri=${encodeURIComponent(redirectUri)}`;
-
-    if (!chrome?.identity?.launchWebAuthFlow) {
-        console.warn("chrome.identity is not available. Simulating redirect auth flow for local testing.");
-        window.location.href = authUrl;
-        return;
-    }
-
-    chrome.identity.launchWebAuthFlow(
-      {
-        url: authUrl,
-        interactive: true,
-      },
-      (redirect_url) => {
-        if (chrome.runtime.lastError) {
-          console.error("Auth error:", chrome.runtime.lastError);
-          return;
-        }
-        if (redirect_url) {
-          const url = new URL(redirect_url);
-          const token = url.searchParams.get('token');
-          if (token) {
-            setAccessToken(token);
-            setProvider('premium');
-            onSave({ provider: 'premium', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: token, warningThreshold: warningThreshold / 100, autoScanEnabled });
-          }
-        }
-      }
-    );
   };
 
   return (
@@ -408,35 +356,6 @@ function SettingsPanel({ settings, onSave }: any) {
           */}
         </div>
       </div>
-
-      {provider === 'premium' && (
-        <div className="space-y-4 bg-amber-50/50 p-4 rounded-xl border border-amber-100 shadow-sm animate-in fade-in flex flex-col items-center text-center">
-          {accessToken ? (
-            <div>
-              <div className="text-green-600 font-semibold mb-2">✓ Active Premium Subscription</div>
-              <button
-                onClick={() => {
-                  setAccessToken('');
-                  onSave({ provider: 'gemini', cloudApiKey, cloudApiUrl, geminiApiKey, accessToken: '', warningThreshold: warningThreshold / 100, autoScanEnabled });
-                }}
-                className="text-xs text-red-500 hover:text-red-700 underline"
-              >
-                Log Out
-              </button>
-            </div>
-          ) : (
-            <div>
-              <p className="text-sm text-slate-700 mb-3">Unlock advanced AI analysis without needing your own API keys or local setup.</p>
-              <button
-                onClick={handlePremiumLogin}
-                className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors shadow-sm"
-              >
-                Subscribe / Log In
-              </button>
-            </div>
-          )}
-        </div>
-      )}
 
       {provider === 'gemini' && (
         <div className="space-y-4 bg-blue-50/50 p-4 rounded-xl border border-blue-100 shadow-sm animate-in fade-in">
