@@ -40,6 +40,35 @@ const ContentOverlay: React.FC = () => {
     chrome.runtime.sendMessage({ type: 'CLEAR_TAB_WARNING' });
   };
 
+  const handleWhitelist = () => {
+      if (!warning) return;
+      try {
+          const urlObj = new URL(warning.url);
+          const domain = urlObj.hostname;
+
+          chrome.storage.local.get(['whitelist'], (result) => {
+              const whitelist: string[] = Array.isArray(result.whitelist) ? result.whitelist : [];
+              if (!whitelist.includes(domain)) {
+                  whitelist.push(domain);
+                  chrome.storage.local.set({ whitelist }, () => {
+                      // Call backend to report
+                      chrome.runtime.sendMessage({
+                          type: 'REPORT_FALSE_POSITIVE',
+                          data: {
+                              domain,
+                              score: warning.score,
+                              reasoning: warning.reasoning
+                          }
+                      });
+                  });
+              }
+          });
+      } catch (e) {
+          console.error("Failed to parse URL for whitelist", e);
+      }
+      handleDismiss();
+  };
+
   if (!warning || dismissed) {
     return <style>{styles}</style>;
   }
@@ -75,7 +104,7 @@ const ContentOverlay: React.FC = () => {
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 mb-3">
               <button
                 onClick={() => window.history.back()}
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex justify-center items-center"
@@ -89,6 +118,13 @@ const ContentOverlay: React.FC = () => {
                 Proceed Anyway
               </button>
             </div>
+
+            <button
+              onClick={handleWhitelist}
+              className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-2 px-4 rounded-lg transition-colors flex justify-center items-center text-sm border border-blue-200"
+            >
+              Report False Positive & Whitelist Domain
+            </button>
           </div>
         </div>
       </div>

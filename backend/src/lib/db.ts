@@ -23,6 +23,14 @@ export async function getDb(): Promise<Database> {
       stripe_customer_id TEXT,
       is_premium BOOLEAN DEFAULT 0
     );
+
+    CREATE TABLE IF NOT EXISTS false_positives (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      domain TEXT NOT NULL,
+      score REAL,
+      reasoning TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   return db;

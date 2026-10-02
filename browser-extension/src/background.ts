@@ -31,32 +31,83 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   // Handle URL intent analysis requests
   if (message.type === 'ANALYZE_URL') {
       const tabId = sender.tab?.id;
-      analyze(message.url, 'url')
-          .then((result) => {
-              if (result.isSuspicious && tabId) {
-                 chrome.storage.local.set({ [`warning_${tabId}`]: { url: message.url, ...result, timestamp: Date.now() } });
-              }
-              sendResponse(result);
-          })
-          .catch((err) => {
-              sendResponse({ isSuspicious: false, score: 0, reasoning: err.message });
-          });
+      chrome.storage.local.get(['whitelist'], (storageResult) => {
+          const whitelist: string[] = Array.isArray(storageResult.whitelist) ? storageResult.whitelist : [];
+          let isWhitelisted = false;
+          try {
+              const urlObj = new URL(message.url);
+              isWhitelisted = whitelist.includes(urlObj.hostname);
+          } catch (e) {
+              console.error("Error parsing URL", e);
+          }
+
+          let contentToAnalyze = message.url;
+          if (isWhitelisted) {
+             contentToAnalyze = `[NOTE: The user has explicitly whitelisted this domain. Take this into account.]\n${message.url}`;
+          }
+
+          analyze(contentToAnalyze, 'url')
+              .then((result) => {
+                  if (result.isSuspicious && tabId && !isWhitelisted) {
+                     chrome.storage.local.set({ [`warning_${tabId}`]: { url: message.url, ...result, timestamp: Date.now() } });
+                  }
+                  sendResponse(result);
+              })
+              .catch((err) => {
+                  sendResponse({ isSuspicious: false, score: 0, reasoning: err.message });
+              });
+      });
       return true;
   }
 
   // Handle Content analysis requests (Deep Scan)
   if (message.type === 'ANALYZE_CONTENT') {
       const tabId = sender.tab?.id;
-      analyze(message.content, 'content')
-          .then((result) => {
-              if (result.isSuspicious && tabId) {
-                 chrome.storage.local.set({ [`warning_${tabId}`]: { url: message.url, ...result, timestamp: Date.now() } });
-              }
-              sendResponse(result);
-          })
-          .catch((err) => {
-              sendResponse({ isSuspicious: false, score: 0, reasoning: err.message });
-          });
+      chrome.storage.local.get(['whitelist'], (storageResult) => {
+          const whitelist: string[] = Array.isArray(storageResult.whitelist) ? storageResult.whitelist : [];
+          let isWhitelisted = false;
+          try {
+              const urlObj = new URL(message.url);
+              isWhitelisted = whitelist.includes(urlObj.hostname);
+          } catch (e) {
+              console.error("Error parsing URL", e);
+          }
+
+          let contentToAnalyze = message.content;
+          if (isWhitelisted) {
+             contentToAnalyze = `[NOTE: The user has explicitly whitelisted this domain. Take this into account.]\n${message.content}`;
+          }
+
+          analyze(contentToAnalyze, 'content')
+              .then((result) => {
+                  if (result.isSuspicious && tabId && !isWhitelisted) {
+                     chrome.storage.local.set({ [`warning_${tabId}`]: { url: message.url, ...result, timestamp: Date.now() } });
+                  }
+                  sendResponse(result);
+              })
+              .catch((err) => {
+                  sendResponse({ isSuspicious: false, score: 0, reasoning: err.message });
+              });
+      });
+      return true;
+  }
+
+  if (message.type === 'REPORT_FALSE_POSITIVE') {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const apiKey = import.meta.env.VITE_API_KEY || 'my_secret_key';
+
+      fetch(`${backendUrl}/api/report-false-positive`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify(message.data)
+      })
+      .then(res => res.json())
+      .then(data => sendResponse({ success: true, data }))
+      .catch(err => sendResponse({ success: false, error: err.message }));
+
       return true;
   }
 });
