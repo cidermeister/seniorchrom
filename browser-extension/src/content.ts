@@ -53,11 +53,20 @@ const initOverlay = async () => {
   try {
       const url = window.location.href;
       if (!url.startsWith('chrome')) {
-          chrome.storage.local.get(['aiSettings'], (result) => {
+          chrome.storage.local.get(['aiSettings', 'whitelist'], (result) => {
               const settings = result.aiSettings || {} as any;
+              const whitelist: string[] = Array.isArray(result.whitelist) ? result.whitelist : [];
               const autoScanEnabled = settings.autoScanEnabled ?? true;
 
-              if (autoScanEnabled) {
+              let isWhitelisted = false;
+              try {
+                  const urlObj = new URL(url);
+                  isWhitelisted = whitelist.includes(urlObj.hostname);
+              } catch (e) {
+                  console.error("Error parsing URL for whitelist check", e);
+              }
+
+              if (autoScanEnabled && !isWhitelisted) {
                   // Phase 1: Scan URL Intent Immediately
                   chrome.runtime.sendMessage({ type: 'ANALYZE_URL', url }, (response) => {
                       if (response && response.isSuspicious) {

@@ -19,6 +19,7 @@ export default defineConfig({
         setup: resolve(import.meta.dirname, 'setup.html'),
         info: resolve(import.meta.dirname, 'info.html'),
         faq: resolve(import.meta.dirname, 'faq.html'),
+        whitelist: resolve(import.meta.dirname, 'whitelist.html'),
       },
     },
   },
