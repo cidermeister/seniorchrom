@@ -86,6 +86,13 @@ function App() {
         </div>
         <div className="flex items-center gap-1">
           <button
+            onClick={() => chrome.tabs.create({ url: chrome.runtime.getURL('whitelist.html') })}
+            className="p-1.5 hover:bg-slate-800 rounded-md transition-colors"
+            title="Whitelist Management"
+          >
+            <ShieldCheck size={18} className="text-slate-300 hover:text-white" />
+          </button>
+          <button
             onClick={() => chrome.tabs.create({ url: chrome.runtime.getURL('info.html') })}
             className="p-1.5 hover:bg-slate-800 rounded-md transition-colors"
             title="Information"
