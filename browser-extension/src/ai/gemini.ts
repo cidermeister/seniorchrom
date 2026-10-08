@@ -8,7 +8,7 @@ export async function analyzeWithGemini(content: string, type: 'url' | 'content'
 
   const promptText = type === 'url' ? getUrlPrompt(content, settings.language) : getContentPrompt(content, settings.language);
 
-  const models = ['gemini-3.5-flash-lite', 'gemma-4-31b-it'];
+  const models = ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite', 'gemma-4-31b-it'];
   let lastError: any;
 
   for (const model of models) {
