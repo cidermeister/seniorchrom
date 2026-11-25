@@ -15,7 +15,7 @@ struct ContentView: View {
                 HStack {
                     TextField("Enter URL", text: $urlString)
                         .keyboardType(.URL)
-                        .autocapitalization(.none)
+                        .textInputAutocapitalization(.never)
                         .disableAutocorrection(true)
                         .padding(10)
                         .background(Color(.systemGray6))
@@ -41,13 +41,13 @@ struct ContentView: View {
 
                 // WebView Integration
                 WebView(url: $loadUrl, isLoading: $isLoading, showWarning: $showWarning, warningMessage: $warningMessage)
-                    .edgesIgnoringSafeArea(.bottom)
+                    .ignoresSafeArea(edges: .bottom)
             }
 
             // Warning Overlay
             if showWarning {
                 Color.black.opacity(0.8)
-                    .edgesIgnoringSafeArea(.all)
+                    .ignoresSafeArea()
 
                 VStack(spacing: 20) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -94,8 +94,6 @@ struct ContentView: View {
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
+#Preview {
+    ContentView()
 }

@@ -1,49 +1,92 @@
-import type { AIResponse } from './types';
-import { SYSTEM_PROMPT, getUrlPrompt, getContentPrompt } from './prompts';
+import type { AIResponse, AISettings, AnalyzeOptions } from './types';
+import {
+  AI_RESPONSE_JSON_SCHEMA,
+  SYSTEM_PROMPT,
+  getContentPrompt,
+  getUrlPrompt
+} from './prompts';
+import { parseAIResponseJson } from './gemini';
 
-// Declare the experimental ai for TypeScript on globalThis
-declare global {
-  // eslint-disable-next-line no-var
-  var ai: {
-    languageModel?: {
-      create: (options?: any) => Promise<{ prompt: (text: string) => Promise<string> }>;
-    };
-    assistant?: {
-      create: (options?: any) => Promise<{ prompt: (text: string) => Promise<string> }>;
-    };
-    createTextSession?: () => Promise<any>;
-  } | undefined;
+export interface NanoSession {
+  prompt: (text: string, options?: { responseConstraint?: unknown }) => Promise<string>;
+  destroy?: () => void;
 }
 
-let nanoSession: any = null;
+interface LanguageModelInitialPrompt {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+interface LanguageModelAPI {
+  availability?: () => Promise<string>;
+  create: (options?: { initialPrompts?: LanguageModelInitialPrompt[] }) => Promise<NanoSession>;
+}
+
+interface LegacyBrowserAI {
+  languageModel?: {
+    create: (options?: { systemPrompt?: string }) => Promise<NanoSession>;
+  };
+  assistant?: {
+    create: (options?: { systemPrompt?: string }) => Promise<NanoSession>;
+  };
+  createTextSession?: () => Promise<NanoSession>;
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var LanguageModel: LanguageModelAPI | undefined;
+  // eslint-disable-next-line no-var
+  var ai: LegacyBrowserAI | undefined;
+}
+
+let nanoSession: NanoSession | null = null;
+let nanoSessionSupportsConstraint = false;
 
 export async function isNanoAvailable(): Promise<boolean> {
+  if (globalThis.LanguageModel?.availability) {
+    try {
+      const availability = await globalThis.LanguageModel.availability();
+      return availability !== 'unavailable' && availability !== 'no';
+    } catch {
+      return false;
+    }
+  }
+
   const aiObj = globalThis.ai;
   return !!aiObj && (!!aiObj.languageModel || !!aiObj.assistant || !!aiObj.createTextSession);
 }
 
-export async function initNanoSession() {
+export async function initNanoSession(): Promise<NanoSession> {
   if (nanoSession) return nanoSession;
 
-  const aiObj = globalThis.ai;
+  if (globalThis.LanguageModel?.create) {
+    try {
+      nanoSession = await globalThis.LanguageModel.create({
+        initialPrompts: [{ role: 'system', content: SYSTEM_PROMPT }]
+      });
+    } catch {
+      nanoSession = await globalThis.LanguageModel.create();
+    }
+    nanoSessionSupportsConstraint = true;
+    return nanoSession;
+  }
 
-  // Try to pass the system prompt as initial context if supported by the local API
-  const options = {
-      systemPrompt: SYSTEM_PROMPT
+  const aiObj = globalThis.ai;
+  const legacyOptions = {
+    systemPrompt: SYSTEM_PROMPT
   };
 
   if (aiObj?.languageModel?.create) {
-    // Newer API might support systemPrompt configuration
     try {
-        nanoSession = await aiObj.languageModel.create(options);
-    } catch(e) {
-        nanoSession = await aiObj.languageModel.create();
+      nanoSession = await aiObj.languageModel.create(legacyOptions);
+    } catch {
+      nanoSession = await aiObj.languageModel.create();
     }
   } else if (aiObj?.assistant?.create) {
     try {
-        nanoSession = await aiObj.assistant.create(options);
-    } catch(e) {
-        nanoSession = await aiObj.assistant.create();
+      nanoSession = await aiObj.assistant.create(legacyOptions);
+    } catch {
+      nanoSession = await aiObj.assistant.create();
     }
   } else if (aiObj?.createTextSession) {
     nanoSession = await aiObj.createTextSession();
@@ -51,37 +94,54 @@ export async function initNanoSession() {
     throw new Error('Gemini Nano is not available in this browser context.');
   }
 
+  nanoSessionSupportsConstraint = false;
   return nanoSession;
 }
 
-import type { AISettings } from './types';
-
-export async function analyzeWithNano(content: string, type: 'url' | 'content', settings?: AISettings): Promise<AIResponse> {
+export async function analyzeWithNano(
+  content: string,
+  type: 'url' | 'content',
+  settings?: AISettings,
+  options?: AnalyzeOptions
+): Promise<AIResponse> {
   try {
     const session = await initNanoSession();
+    const basePrompt =
+      type === 'url'
+        ? getUrlPrompt(content, settings?.language)
+        : getContentPrompt(content, settings?.language, options?.url);
 
-    // For Nano, since system prompt injection isn't always reliable across experimental versions,
-    // we prepend the system prompt instructions directly to the user prompt just in case.
-    const basePrompt = type === 'url' ? getUrlPrompt(content, settings?.language) : getContentPrompt(content, settings?.language);
-    const combinedPrompt = `${SYSTEM_PROMPT}\n\nTask:\n${basePrompt}`;
-
-    const resultString = await session.prompt(combinedPrompt);
+    let resultString: string;
+    if (nanoSessionSupportsConstraint) {
+      try {
+        resultString = await session.prompt(basePrompt, {
+          responseConstraint: AI_RESPONSE_JSON_SCHEMA
+        });
+      } catch {
+        resultString = await session.prompt(`${SYSTEM_PROMPT}\n\nTask:\n${basePrompt}`);
+      }
+    } else {
+      resultString = await session.prompt(`${SYSTEM_PROMPT}\n\nTask:\n${basePrompt}`);
+    }
 
     try {
-      // Clean up potential markdown formatting from AI output
-      const cleanJson = resultString.replace(/```json/g, '').replace(/```/g, '').trim();
-      const result = JSON.parse(cleanJson) as AIResponse;
-      return result;
-    } catch (parseError) {
-      console.error("Failed to parse Nano response as JSON:", resultString);
+      return parseAIResponseJson(resultString);
+    } catch {
+      console.error('Failed to parse Nano response as JSON:', resultString);
       return {
-        isSuspicious: true, // Default to cautious
+        isSuspicious: true,
         score: 0.8,
-        reasoning: "AI analysis completed, but failed to return structured response. Treating as potentially suspicious."
+        reasoning:
+          'AI analysis completed, but failed to return structured response. Treating as potentially suspicious.'
       };
     }
-  } catch (error: any) {
-    console.error("Nano AI Error:", error);
+  } catch (error) {
+    console.error('Nano AI Error:', error);
     throw error;
   }
+}
+
+export function resetNanoSessionForTests(): void {
+  nanoSession = null;
+  nanoSessionSupportsConstraint = false;
 }

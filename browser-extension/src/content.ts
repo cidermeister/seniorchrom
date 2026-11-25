@@ -52,31 +52,34 @@ const initOverlay = async () => {
   // 3. Automated Scanning
   try {
       const url = window.location.href;
-      if (!url.startsWith('chrome')) {
+      let urlObj: URL | null = null;
+      try {
+          urlObj = new URL(url);
+      } catch (e) {
+          console.error("Error parsing URL for auto-scan", e);
+      }
+
+      const isScannableUrl =
+          urlObj !== null &&
+          (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') &&
+          urlObj.hostname !== 'localhost' &&
+          urlObj.hostname !== '127.0.0.1';
+
+      if (isScannableUrl && urlObj) {
+          const hostname = urlObj.hostname;
           chrome.storage.local.get(['aiSettings', 'whitelist'], (result) => {
               const settings = result.aiSettings || {} as any;
               const whitelist: string[] = Array.isArray(result.whitelist) ? result.whitelist : [];
               const autoScanEnabled = settings.autoScanEnabled ?? true;
-
-              let isWhitelisted = false;
-              try {
-                  const urlObj = new URL(url);
-                  isWhitelisted = whitelist.includes(urlObj.hostname);
-              } catch (e) {
-                  console.error("Error parsing URL for whitelist check", e);
-              }
+              const isWhitelisted = whitelist.includes(hostname);
 
               if (autoScanEnabled && !isWhitelisted) {
-                  // Phase 1: Scan URL Intent Immediately
-                  chrome.runtime.sendMessage({ type: 'ANALYZE_URL', url }, (response) => {
-                      if (response && response.isSuspicious) {
-                          const warningData = { url, ...response, timestamp: Date.now() };
-                          window.dispatchEvent(new CustomEvent('scam-guard-warning', { detail: warningData }));
-                      }
-                  });
+                  let urlFlaggedSuspicious = false;
+                  let contentScanTimer: ReturnType<typeof setTimeout> | undefined;
 
                   // Phase 2: Wait 1.5 seconds for React/SPA pages to render, then auto-scan content
-                  setTimeout(() => {
+                  contentScanTimer = setTimeout(() => {
+                      if (urlFlaggedSuspicious) return;
                       const textContent = extractPageText();
                       if (textContent.length > 50) {
                           chrome.runtime.sendMessage({ type: 'ANALYZE_CONTENT', url, content: textContent }, (response) => {
@@ -87,6 +90,18 @@ const initOverlay = async () => {
                           });
                       }
                   }, 1500);
+
+                  // Phase 1: Scan URL Intent Immediately
+                  chrome.runtime.sendMessage({ type: 'ANALYZE_URL', url }, (response) => {
+                      if (response && response.isSuspicious) {
+                          urlFlaggedSuspicious = true;
+                          if (contentScanTimer) {
+                              clearTimeout(contentScanTimer);
+                          }
+                          const warningData = { url, ...response, timestamp: Date.now() };
+                          window.dispatchEvent(new CustomEvent('scam-guard-warning', { detail: warningData }));
+                      }
+                  });
               }
           });
       }

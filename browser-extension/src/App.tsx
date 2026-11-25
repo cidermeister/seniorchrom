@@ -64,7 +64,11 @@ function App() {
         throw new Error("No text content found on page.");
       }
 
-      const result = await analyze(response.content, 'content');
+      const result = await analyze(response.content, 'content', {
+        url: tab.url,
+        bypassCache: true,
+        requireReasoning: true
+      });
       setScanResult(result);
     } catch (err: any) {
       if (err.message === 'NANO_NOT_AVAILABLE') {
@@ -140,7 +144,7 @@ function StatusPanel({ currentUrl, scanResult, loading, error, onScanClick }: an
     try {
       const url = new URL(currentUrl);
       return url.hostname;
-    } catch (e) {
+    } catch {
       return currentUrl.substring(0, 30) + '...';
     }
   })() : 'Loading...';

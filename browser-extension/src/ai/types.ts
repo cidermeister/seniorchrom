@@ -16,3 +16,9 @@ export interface AIResponse {
   score: number; // 0.0 to 1.0
   reasoning: string;
 }
+
+export interface AnalyzeOptions {
+  url?: string;
+  bypassCache?: boolean;
+  requireReasoning?: boolean;
+}

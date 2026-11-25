@@ -1,7 +1,10 @@
-import type { AIResponse, AISettings } from './types';
+import type { AIResponse, AISettings, AnalyzeOptions } from './types';
 import { analyzeWithNano, isNanoAvailable } from './nano';
 import { analyzeWithCloud } from './cloud';
 import { analyzeWithGemini } from './gemini';
+import { buildCacheKey, getCachedScan, setCachedScan } from './cache';
+
+const inFlightRequests = new Map<string, Promise<AIResponse>>();
 
 export const DEFAULT_SETTINGS: AISettings = {
   provider: 'gemini',
@@ -29,9 +32,20 @@ export async function saveSettings(settings: AISettings): Promise<void> {
   }
 }
 
-export async function analyze(content: string, type: 'url' | 'content'): Promise<AIResponse> {
-  const settings = await getSettings();
+function applyThreshold(result: AIResponse, warningThreshold: number): AIResponse {
+  return {
+    ...result,
+    isSuspicious: result.score >= warningThreshold
+  };
+}
 
+async function executeAndCache(
+  content: string,
+  type: 'url' | 'content',
+  settings: AISettings,
+  cacheKey: string,
+  options?: AnalyzeOptions
+): Promise<AIResponse> {
   let result: AIResponse;
 
   if (settings.provider === 'nano') {
@@ -39,18 +53,59 @@ export async function analyze(content: string, type: 'url' | 'content'): Promise
     if (!available) {
       throw new Error('NANO_NOT_AVAILABLE');
     }
-    result = await analyzeWithNano(content, type, settings);
+    result = await analyzeWithNano(content, type, settings, options);
   } else if (settings.provider === 'gemini') {
-    result = await analyzeWithGemini(content, type, settings);
+    result = await analyzeWithGemini(content, type, settings, options);
   } else {
     result = await analyzeWithCloud(content, type, settings);
   }
 
-  if (result.score >= settings.warningThreshold) {
-      result.isSuspicious = true;
-  } else {
-      result.isSuspicious = false;
+  const finalResult = applyThreshold(result, settings.warningThreshold);
+  await setCachedScan(cacheKey, finalResult);
+  return finalResult;
+}
+
+export async function analyze(
+  content: string,
+  type: 'url' | 'content',
+  options?: AnalyzeOptions
+): Promise<AIResponse> {
+  const settings = await getSettings();
+  const cacheKey = buildCacheKey({
+    type,
+    content,
+    provider: settings.provider,
+    language: settings.language,
+    url: options?.url,
+    requireReasoning: options?.requireReasoning
+  });
+
+  if (!options?.bypassCache) {
+    const cached = await getCachedScan(cacheKey);
+    if (cached) {
+      return applyThreshold(cached, settings.warningThreshold);
+    }
+
+    const inFlight = inFlightRequests.get(cacheKey);
+    if (inFlight) {
+      const sharedResult = await inFlight;
+      return applyThreshold(sharedResult, settings.warningThreshold);
+    }
+
+    const requestPromise = executeAndCache(content, type, settings, cacheKey, options).finally(
+      () => {
+        inFlightRequests.delete(cacheKey);
+      }
+    );
+    inFlightRequests.set(cacheKey, requestPromise);
+
+    const result = await requestPromise;
+    return applyThreshold(result, settings.warningThreshold);
   }
 
-  return result;
+  return executeAndCache(content, type, settings, cacheKey, options);
+}
+
+export function clearInFlightRequestsForTests(): void {
+  inFlightRequests.clear();
 }

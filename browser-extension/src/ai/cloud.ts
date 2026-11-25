@@ -18,7 +18,7 @@ export async function analyzeWithCloud(content: string, type: 'url' | 'content',
   }
 
   // If the user just typed the base domain/port, add /v1
-  if (endpoint.match(/^https?:\/\/[^\/]+$/)) {
+  if (endpoint.match(/^https?:\/\/[^/]+$/)) {
       endpoint += '/v1';
   }
 
@@ -64,7 +64,7 @@ export async function analyzeWithCloud(content: string, type: 'url' | 'content',
             score: result.score,
             reasoning: result.reasoning || "No reasoning provided."
         };
-      } catch (parseError) {
+      } catch {
         console.error("Failed to parse Cloud response as JSON:", resultString);
         return {
           isSuspicious: true,
